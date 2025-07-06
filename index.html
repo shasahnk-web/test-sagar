@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sagar - Quiz Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
+                <h1>Test Sagar</h1>
+            </div>
+            <button class="hamburger" id="hamburger">☰</button>
+        </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Available Quizzes</h3>
+            <button class="close-sidebar" id="closeSidebar">×</button>
+        </div>
+        <div class="quiz-list" id="sidebarQuizList"></div>
+    </div>
+
+    <main class="main-content">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search quizzes..." class="search-input">
+        </div>
+        
+        <div class="quiz-grid" id="quizGrid">
+            <div class="loading">Loading quizzes...</div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Test Sagar<br>Powered by TRMS</p>
+    </footer>
+
+    <!-- Name Modal -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <h2>Welcome to Test Sagar</h2>
+            <p>Please enter your name to continue:</p>
+            <input type="text" id="nameInput" placeholder="Your name" required>
+            <button id="submitName">Continue</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeUser();
+            loadQuizzes();
+            setupSearch();
+            setupSidebar();
+        });
+    </script>
+</body>
+</html>
