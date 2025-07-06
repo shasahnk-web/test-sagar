@@ -20,7 +20,7 @@
     <main class="main-content">
         <div class="upload-container">
             <h2>Upload Quiz Data</h2>
-            
+
             <div class="auth-section" id="authSection">
                 <h3>Admin Authentication</h3>
                 <input type="password" id="adminPassword" placeholder="Enter admin password">
@@ -53,7 +53,7 @@
                 </div>
 
                 <button class="btn btn-success" onclick="uploadQuiz()">Upload Quiz</button>
-                
+
                 <div class="upload-status" id="uploadStatus"></div>
             </div>
         </div>
@@ -101,7 +101,7 @@
 
                 const file = fileInput.files[0];
                 const fileContent = await readFile(file);
-                
+
                 let data;
                 if (file.name.endsWith('.json')) {
                     data = JSON.parse(fileContent);
@@ -109,11 +109,11 @@
                     // Simple extraction for JS files
                     const rawIdsMatch = fileContent.match(/rawIds\s*=\s*\[(.*?)\]/s);
                     const correctAnswersMatch = fileContent.match(/correctAnswers\s*=\s*\[(.*?)\]/s);
-                    
+
                     if (!rawIdsMatch || !correctAnswersMatch) {
                         throw new Error('Could not find rawIds and correctAnswers arrays in JS file');
                     }
-                    
+
                     data = {
                         rawIds: JSON.parse('[' + rawIdsMatch[1] + ']'),
                         correctAnswers: JSON.parse('[' + correctAnswersMatch[1] + ']')
@@ -150,7 +150,7 @@
                 const questions = [];
                 for (let i = 0; i < 75; i++) {
                     let subject, type;
-                    
+
                     if (i < 25) {
                         subject = 'Physics';
                         type = i >= 20 ? 'integer' : 'mcq';
@@ -179,7 +179,7 @@
                 if (questionsError) throw questionsError;
 
                 statusDiv.innerHTML = '<div class="success">✅ Quiz uploaded successfully!</div>';
-                
+
                 // Reset form
                 document.getElementById('testName').value = '';
                 document.getElementById('testDescription').value = '';

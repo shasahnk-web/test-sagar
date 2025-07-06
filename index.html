@@ -55,10 +55,12 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            await initializeUser();
-            loadQuizzes();
-            setupSearch();
-            setupSidebar();
+            const hasAccess = await enforceGlobalAccess();
+            if (hasAccess) {
+                loadQuizzes();
+                setupSearch();
+                setupSidebar();
+            }
         });
     </script>
 </body>

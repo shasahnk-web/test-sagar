@@ -37,21 +37,21 @@ let accessStatus = null;
 async function initializeUser() {
     let deviceId = localStorage.getItem('device_id');
     let userName = localStorage.getItem('user_name');
-    
+
     if (!deviceId || !userName) {
-        showNameModal();
+        await showNameModal();
         return;
     }
-    
+
     currentUser = { device_id: deviceId, name: userName };
-    
+
     // Check if user exists in database
     const { data: existingUser } = await supabase
         .from('user_trials')
         .select('*')
         .eq('device_id', deviceId)
         .single();
-    
+
     if (!existingUser) {
         // Insert new user trial
         await supabase
@@ -62,7 +62,7 @@ async function initializeUser() {
                 start_date: new Date().toISOString()
             });
     }
-    
+
     // Check access status
     await checkGlobalAccess();
 }
@@ -71,42 +71,42 @@ async function checkGlobalAccess() {
     if (!currentUser) {
         return false;
     }
-    
+
     // Check trial status first
     const { data: trial } = await supabase
         .from('user_trials')
         .select('start_date')
         .eq('device_id', currentUser.device_id)
         .single();
-    
+
     if (trial) {
         const startDate = new Date(trial.start_date);
         const threeDaysLater = new Date(startDate.getTime() + (3 * 24 * 60 * 60 * 1000));
         const now = new Date();
-        
+
         if (now <= threeDaysLater) {
             accessStatus = 'trial';
             return true;
         }
     }
-    
+
     // Check premium status
     const { data: premium } = await supabase
         .from('premium_users')
         .select('expiry_date')
         .eq('device_id', currentUser.device_id)
         .single();
-    
+
     if (premium) {
         const expiryDate = new Date(premium.expiry_date);
         const now = new Date();
-        
+
         if (now <= expiryDate) {
             accessStatus = 'premium';
             return true;
         }
     }
-    
+
     // No access - show premium modal
     accessStatus = 'expired';
     showPremiumModal();
@@ -118,32 +118,34 @@ function showPremiumModal() {
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     const modal = document.createElement('div');
     modal.id = 'premiumModal';
     modal.className = 'modal premium-modal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
     modal.innerHTML = `
-        <div class="modal-content premium-content">
+        <div class="modal-content premium-content" style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             <div class="premium-header">
-                <h2>🚀 Trial Expired</h2>
-                <p>Your 3-day free trial has ended. Upgrade to Premium to continue accessing all quizzes!</p>
+                <h2 style="color: #e74c3c; margin-bottom: 1rem;">🚀 Trial Expired</h2>
+                <p style="color: #666; margin-bottom: 2rem;">Your 3-day free trial has ended. Upgrade to Premium to continue accessing all quizzes!</p>
             </div>
-            <div class="premium-features">
-                <h3>Premium Benefits:</h3>
-                <ul>
-                    <li>✅ Unlimited access to all quizzes</li>
-                    <li>✅ 90 days of full access</li>
-                    <li>✅ No restrictions on attempts</li>
-                    <li>✅ Priority support</li>
+            <div class="premium-features" style="text-align: left; margin-bottom: 2rem;">
+                <h3 style="color: #333; margin-bottom: 1rem;">Premium Benefits:</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 0.5rem 0; color: #27ae60;">✅ Unlimited access to all quizzes</li>
+                    <li style="padding: 0.5rem 0; color: #27ae60;">✅ 90 days of full access</li>
+                    <li style="padding: 0.5rem 0; color: #27ae60;">✅ No restrictions on attempts</li>
+                    <li style="padding: 0.5rem 0; color: #27ae60;">✅ Priority support</li>
                 </ul>
             </div>
             <div class="premium-pricing">
-                <div class="price">₹99 for 90 days</div>
-                <button class="btn btn-premium" onclick="initiatePremiumPayment()">Buy Premium Now</button>
+                <div class="price" style="font-size: 2rem; font-weight: bold; color: #2c3e50; margin-bottom: 1rem;">₹99 for 90 days</div>
+                <button class="btn btn-premium" onclick="initiatePremiumPayment()" style="background: #27ae60; color: white; border: none; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 5px; cursor: pointer; width: 100%; margin-bottom: 1rem;">Buy Premium Now</button>
+                <p style="color: #95a5a6; font-size: 0.9rem;">Secure payment powered by Razorpay</p>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
     modal.classList.add('show');
 }
@@ -153,41 +155,74 @@ async function initiatePremiumPayment() {
         alert('Please refresh the page and try again.');
         return;
     }
-    
-    const options = {
-        key: 'rzp_test_o1mGGxGdk4rBCk',
-        amount: 9900, // ₹99 in paise
-        currency: 'INR',
-        name: 'Test Sagar Premium',
-        description: 'Unlock all quizzes for 90 days',
-        prefill: {
-            name: currentUser.name,
-            email: '', // Can be empty for test mode
-            contact: '' // Can be empty for test mode
-        },
-        theme: {
-            color: '#4A90E2'
-        },
-        handler: async function(response) {
-            await handlePaymentSuccess(response);
-        },
-        modal: {
-            ondismiss: function() {
-                console.log('Payment cancelled');
+
+    // Show loading state
+    const buyButton = document.querySelector('.btn-premium');
+    const originalText = buyButton.textContent;
+    buyButton.textContent = 'Loading...';
+    buyButton.disabled = true;
+
+    try {
+        const options = {
+            key: 'rzp_test_o1mGGxGdk4rBCk',
+            amount: 9900, // ₹99 in paise
+            currency: 'INR',
+            name: 'Test Sagar Premium',
+            description: 'Unlock all quizzes for 90 days',
+            image: '/logo', // Optional logo
+            prefill: {
+                name: currentUser.name,
+                email: '', // Can be empty for test mode
+                contact: '' // Can be empty for test mode
+            },
+            theme: {
+                color: '#27ae60'
+            },
+            handler: async function(response) {
+                await handlePaymentSuccess(response);
+            },
+            modal: {
+                ondismiss: function() {
+                    console.log('Payment cancelled');
+                    // Restore button state
+                    buyButton.textContent = originalText;
+                    buyButton.disabled = false;
+                }
             }
-        }
-    };
-    
-    const rzp = new Razorpay(options);
-    rzp.open();
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    } catch (error) {
+        console.error('Error initiating payment:', error);
+        alert('Error starting payment. Please try again.');
+        buyButton.textContent = originalText;
+        buyButton.disabled = false;
+    }
 }
 
 async function handlePaymentSuccess(paymentResponse) {
     try {
+        console.log('Payment successful:', paymentResponse);
+
+        // Show processing message
+        const premiumModal = document.getElementById('premiumModal');
+        if (premiumModal) {
+            premiumModal.querySelector('.premium-content').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #27ae60;">🎉 Payment Successful!</h2>
+                    <p>Processing your premium access...</p>
+                    <div style="margin: 1rem 0;">
+                        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Calculate expiry date (90 days from now)
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 90);
-        
+
         // Insert or update premium user
         const { error } = await supabase
             .from('premium_users')
@@ -196,68 +231,88 @@ async function handlePaymentSuccess(paymentResponse) {
                 name: currentUser.name,
                 expiry_date: expiryDate.toISOString()
             });
-        
+
         if (error) {
             throw error;
         }
-        
-        // Close premium modal
-        const premiumModal = document.getElementById('premiumModal');
-        if (premiumModal) {
-            premiumModal.remove();
-        }
-        
+
         // Update access status
         accessStatus = 'premium';
-        
-        // Show success message
-        alert('🎉 Payment successful! You now have Premium access for 90 days.');
-        
-        // Reload the page to reflect new access
-        window.location.reload();
-        
+
+        // Wait a moment then close modal and reload
+        setTimeout(() => {
+            if (premiumModal) {
+                premiumModal.remove();
+            }
+
+            // Show success message
+            alert('🎉 Premium access activated! You now have full access for 90 days.');
+
+            // Reload the page to reflect new access
+            window.location.reload();
+        }, 2000);
+
     } catch (error) {
         console.error('Error updating premium status:', error);
-        alert('Payment successful but there was an error updating your account. Please contact support.');
+        
+        // Update modal to show error
+        const premiumModal = document.getElementById('premiumModal');
+        if (premiumModal) {
+            premiumModal.querySelector('.premium-content').innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #e74c3c;">⚠️ Processing Error</h2>
+                    <p>Payment was successful but there was an error activating your premium access.</p>
+                    <p style="color: #666; margin: 1rem 0;">Payment ID: ${paymentResponse.razorpay_payment_id}</p>
+                    <p style="color: #666;">Please contact support with this payment ID.</p>
+                    <button onclick="window.location.reload()" style="background: #3498db; color: white; border: none; padding: 1rem 2rem; border-radius: 5px; cursor: pointer; margin-top: 1rem;">Try Again</button>
+                </div>
+            `;
+        }
     }
 }
 
 function showNameModal() {
-    const modal = document.getElementById('nameModal');
-    if (modal) {
-        modal.classList.add('show');
-        
-        const submitBtn = document.getElementById('submitName');
-        const nameInput = document.getElementById('nameInput');
-        
-        submitBtn.onclick = async () => {
-            const name = nameInput.value.trim();
-            if (name) {
-                const deviceId = generateUUID();
-                localStorage.setItem('device_id', deviceId);
-                localStorage.setItem('user_name', name);
-                
-                currentUser = { device_id: deviceId, name: name };
-                
-                // Insert into user_trials
-                await supabase
-                    .from('user_trials')
-                    .insert({
-                        device_id: deviceId,
-                        name: name,
-                        start_date: new Date().toISOString()
-                    });
-                
-                modal.classList.remove('show');
-            }
-        };
-        
-        nameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                submitBtn.click();
-            }
-        });
-    }
+    return new Promise((resolve) => {
+        const modal = document.getElementById('nameModal');
+        if (modal) {
+            modal.classList.add('show');
+
+            const submitBtn = document.getElementById('submitName');
+            const nameInput = document.getElementById('nameInput');
+
+            const handleSubmit = async () => {
+                const name = nameInput.value.trim();
+                if (name) {
+                    const deviceId = generateUUID();
+                    localStorage.setItem('device_id', deviceId);
+                    localStorage.setItem('user_name', name);
+
+                    currentUser = { device_id: deviceId, name: name };
+
+                    // Insert into user_trials
+                    await supabase
+                        .from('user_trials')
+                        .insert({
+                            device_id: deviceId,
+                            name: name,
+                            start_date: new Date().toISOString()
+                        });
+
+                    modal.classList.remove('show');
+                    await checkGlobalAccess();
+                    resolve();
+                }
+            };
+
+            submitBtn.onclick = handleSubmit;
+
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleSubmit();
+                }
+            });
+        }
+    });
 }
 
 async function checkUserAccess() {
@@ -265,16 +320,16 @@ async function checkUserAccess() {
         alert('Please refresh the page and enter your name.');
         return false;
     }
-    
+
     if (accessStatus === 'trial' || accessStatus === 'premium') {
         return true;
     }
-    
+
     if (accessStatus === 'expired') {
         showPremiumModal();
         return false;
     }
-    
+
     // Fallback - recheck access
     return await checkGlobalAccess();
 }
@@ -286,9 +341,9 @@ async function loadQuizzes() {
             .from('tests')
             .select('*')
             .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         quizzes = data || [];
         displayQuizzes(quizzes);
         updateSidebar(quizzes);
@@ -300,12 +355,12 @@ async function loadQuizzes() {
 
 function displayQuizzes(quizzesToShow) {
     const quizGrid = document.getElementById('quizGrid');
-    
+
     if (!quizzesToShow || quizzesToShow.length === 0) {
         quizGrid.innerHTML = '<div class="loading">No quizzes available.</div>';
         return;
     }
-    
+
     quizGrid.innerHTML = quizzesToShow.map(quiz => `
         <div class="quiz-card" onclick="openQuiz('${quiz.id}')">
             <h3>${quiz.name}</h3>
@@ -351,19 +406,19 @@ function setupSidebar() {
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
     const closeSidebar = document.getElementById('closeSidebar');
-    
+
     if (hamburger && sidebar) {
         hamburger.addEventListener('click', () => {
             sidebar.classList.add('open');
         });
     }
-    
+
     if (closeSidebar && sidebar) {
         closeSidebar.addEventListener('click', () => {
             sidebar.classList.remove('open');
         });
     }
-    
+
     // Close sidebar when clicking outside
     document.addEventListener('click', (e) => {
         if (sidebar && sidebar.classList.contains('open') && 
@@ -381,20 +436,20 @@ async function openQuiz(testId) {
     if (!hasAccess) {
         return;
     }
-    
+
     window.location.href = `quiz.html?test_id=${testId}`;
 }
 
 async function loadQuizData() {
     const urlParams = new URLSearchParams(window.location.search);
     const testId = urlParams.get('test_id');
-    
+
     if (!testId) {
         alert('No quiz selected');
         window.location.href = 'index.html';
         return;
     }
-    
+
     try {
         // Load quiz metadata
         const { data: quiz, error: quizError } = await supabase
@@ -402,23 +457,23 @@ async function loadQuizData() {
             .select('*')
             .eq('id', testId)
             .single();
-        
+
         if (quizError) throw quizError;
         currentQuiz = quiz;
-        
+
         // Load questions
         const { data: questionsData, error: questionsError } = await supabase
             .from('questions')
             .select('*')
             .eq('test_id', testId)
             .order('subject');
-        
+
         if (questionsError) throw questionsError;
         questions = questionsData || [];
-        
+
         // Initialize quiz interface
         initializeQuizInterface();
-        
+
     } catch (error) {
         console.error('Error loading quiz:', error);
         alert('Failed to load quiz. Please try again.');
@@ -429,17 +484,17 @@ async function loadQuizData() {
 function initializeQuizInterface() {
     // Set quiz title
     document.title = `${currentQuiz.name} - Test Sagar`;
-    
+
     // Initialize timer
     quizStartTime = Date.now();
     startTimer();
-    
+
     // Setup navigation
     setupQuizNavigation();
-    
+
     // Display first question
     displayQuestion(0);
-    
+
     // Setup keyboard shortcuts
     setupKeyboardShortcuts();
 }
@@ -447,15 +502,15 @@ function initializeQuizInterface() {
 function setupQuizNavigation() {
     const questionNav = document.querySelector('.question-nav');
     if (!questionNav) return;
-    
+
     // Group questions by subject
     const subjects = ['Physics', 'Chemistry', 'Maths'];
     let navHTML = '';
-    
+
     subjects.forEach(subject => {
         const subjectQuestions = questions.filter(q => q.subject === subject);
         if (subjectQuestions.length === 0) return;
-        
+
         navHTML += `
             <div class="subject-section" data-subject="${subject}">
                 <div class="subject-header" onclick="toggleSubjectSection('${subject}')">
@@ -471,9 +526,9 @@ function setupQuizNavigation() {
             </div>
         `;
     });
-    
+
     questionNav.innerHTML = navHTML;
-    
+
     // Expand first section by default
     const firstSection = questionNav.querySelector('.subject-section');
     if (firstSection) {
@@ -495,7 +550,7 @@ function toggleSubjectSection(subject) {
 function setupQuizHeader() {
     const hamburger = document.querySelector('.quiz-header .hamburger');
     const questionNav = document.querySelector('.question-nav');
-    
+
     if (hamburger && questionNav) {
         hamburger.addEventListener('click', () => {
             questionNav.classList.toggle('open');
@@ -506,7 +561,7 @@ function setupQuizHeader() {
 function startTimer() {
     const timerElement = document.querySelector('.timer');
     if (!timerElement) return;
-    
+
     timerInterval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
         timerElement.textContent = formatTime(elapsed);
@@ -515,31 +570,31 @@ function startTimer() {
 
 function displayQuestion(index) {
     if (index < 0 || index >= questions.length) return;
-    
+
     currentQuestionIndex = index;
     const question = questions[index];
-    
+
     // Update question navigation
     updateQuestionNavigation();
-    
+
     // Update question content
     const questionContent = document.querySelector('.question-content');
     if (!questionContent) return;
-    
+
     questionContent.innerHTML = `
         <div class="question-header">
             <div class="question-number">Question ${index + 1} of ${questions.length}</div>
             <div class="subject-badge">${question.subject}</div>
         </div>
-        
+
         <div class="question-body">
             ${question.image ? `<img src="${question.image}" alt="Question image" class="question-image" onerror="this.style.display='none'">` : ''}
-            
+
             <div class="question-options">
                 ${question.type === 'mcq' ? renderMCQOptions(question, index) : renderIntegerInput(question, index)}
             </div>
         </div>
-        
+
         <div class="question-actions">
             <button class="btn btn-secondary" onclick="skipQuestion()">Skip</button>
             <button class="btn btn-secondary" onclick="clearAnswer()">Clear</button>
@@ -552,7 +607,7 @@ function displayQuestion(index) {
 function renderMCQOptions(question, questionIndex) {
     const options = question.options || ['A', 'B', 'C', 'D'];
     const currentAnswer = userAnswers[questionIndex];
-    
+
     return `
         <div class="options">
             ${options.map(option => `
@@ -567,7 +622,7 @@ function renderMCQOptions(question, questionIndex) {
 
 function renderIntegerInput(question, questionIndex) {
     const currentAnswer = userAnswers[questionIndex] || '';
-    
+
     return `
         <div class="integer-answer">
             <label for="integer_${questionIndex}">Enter your answer:</label>
@@ -580,12 +635,12 @@ function renderIntegerInput(question, questionIndex) {
 
 function selectOption(option, questionIndex) {
     userAnswers[questionIndex] = option;
-    
+
     // Update UI
     const options = document.querySelectorAll('.option');
     options.forEach(opt => opt.classList.remove('selected'));
     event.currentTarget.classList.add('selected');
-    
+
     updateQuestionNavigation();
 }
 
@@ -603,15 +658,15 @@ function updateQuestionNavigation() {
     const questionBtns = document.querySelectorAll('.question-btn');
     questionBtns.forEach((btn, index) => {
         btn.classList.remove('current', 'answered', 'marked');
-        
+
         if (index === currentQuestionIndex) {
             btn.classList.add('current');
         }
-        
+
         if (userAnswers.hasOwnProperty(index)) {
             btn.classList.add('answered');
         }
-        
+
         if (markedQuestions.has(index)) {
             btn.classList.add('marked');
         }
@@ -620,7 +675,7 @@ function updateQuestionNavigation() {
 
 function goToQuestion(index) {
     displayQuestion(index);
-    
+
     // Close navigation on mobile
     const questionNav = document.querySelector('.question-nav');
     if (window.innerWidth <= 768 && questionNav) {
@@ -646,7 +701,7 @@ function toggleMarkForReview() {
         markedQuestions.add(currentQuestionIndex);
     }
     updateQuestionNavigation();
-    
+
     // Update button text
     const markBtn = document.querySelector('.btn-warning');
     if (markBtn) {
@@ -668,7 +723,7 @@ function saveAndNext() {
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
         if (e.target.type === 'number' || e.target.type === 'text') return;
-        
+
         switch(e.key) {
             case 'ArrowLeft':
                 if (currentQuestionIndex > 0) {
@@ -710,10 +765,10 @@ async function submitQuiz() {
     if (!confirm('Are you sure you want to submit the quiz? You cannot change your answers after submission.')) {
         return;
     }
-    
+
     // Calculate results
     const results = calculateResults();
-    
+
     // Store results in localStorage for result page
     localStorage.setItem('quiz_results', JSON.stringify({
         quiz: currentQuiz,
@@ -723,7 +778,7 @@ async function submitQuiz() {
         results: results,
         completedAt: new Date().toISOString()
     }));
-    
+
     // Redirect to results page
     window.location.href = 'result.html';
 }
@@ -732,21 +787,21 @@ function calculateResults() {
     let correct = 0;
     let incorrect = 0;
     let skipped = 0;
-    
+
     const subjectStats = {
         Physics: { correct: 0, incorrect: 0, skipped: 0, total: 0 },
         Chemistry: { correct: 0, incorrect: 0, skipped: 0, total: 0 },
         Maths: { correct: 0, incorrect: 0, skipped: 0, total: 0 }
     };
-    
+
     const correctQuestions = [];
     const incorrectQuestions = [];
     const skippedQuestions = [];
-    
+
     questions.forEach((question, index) => {
         const subject = question.subject;
         subjectStats[subject].total++;
-        
+
         if (!userAnswers.hasOwnProperty(index)) {
             skipped++;
             subjectStats[subject].skipped++;
@@ -761,10 +816,10 @@ function calculateResults() {
             incorrectQuestions.push(index + 1);
         }
     });
-    
+
     const total = questions.length;
     const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
-    
+
     return {
         correct,
         incorrect,
@@ -786,17 +841,17 @@ function loadResults() {
         window.location.href = 'index.html';
         return;
     }
-    
+
     const data = JSON.parse(resultsData);
     displayResults(data);
 }
 
 function displayResults(data) {
     const { quiz, results, completedAt } = data;
-    
+
     // Update page title
     document.title = `${quiz.name} - Results - Test Sagar`;
-    
+
     // Display results
     document.querySelector('.result-container').innerHTML = `
         <div class="result-header">
@@ -804,7 +859,7 @@ function displayResults(data) {
             <h2>${quiz.name}</h2>
             <p>Completed on ${new Date(completedAt).toLocaleString()}</p>
         </div>
-        
+
         <div class="score-summary">
             <div class="score-grid">
                 <div class="score-item correct">
@@ -823,7 +878,7 @@ function displayResults(data) {
             <div class="score-percentage">${results.percentage}%</div>
             <p style="text-align: center; color: #666;">Score: ${results.correct} / ${results.total}</p>
         </div>
-        
+
         <div class="sectional-analysis">
             <h3>Subject-wise Analysis</h3>
             <table class="sectional-table">
@@ -851,7 +906,7 @@ function displayResults(data) {
                 </tbody>
             </table>
         </div>
-        
+
         <div class="question-lists">
             <div class="question-list">
                 <h3>✅ Correct Questions</h3>
@@ -862,7 +917,7 @@ function displayResults(data) {
                     }
                 </ul>
             </div>
-            
+
             <div class="question-list">
                 <h3>❌ Incorrect Questions</h3>
                 <ul>
@@ -872,7 +927,7 @@ function displayResults(data) {
                     }
                 </ul>
             </div>
-            
+
             <div class="question-list">
                 <h3>❓ Unattempted Questions</h3>
                 <ul>
@@ -883,7 +938,7 @@ function displayResults(data) {
                 </ul>
             </div>
         </div>
-        
+
         <div class="result-actions">
             <button class="btn btn-primary" onclick="reviewAnswers()">Review Answers</button>
             <button class="btn btn-secondary" onclick="retakeQuiz()">Retake Quiz</button>
@@ -920,6 +975,81 @@ function cleanup() {
 window.addEventListener('beforeunload', cleanup);
 window.addEventListener('unload', cleanup);
 
+// Global access enforcement - runs on every page
+async function enforceGlobalAccess() {
+    // Don't enforce on uploader page
+    if (window.location.pathname.includes('uploader.html')) {
+        return true;
+    }
+
+    try {
+        await initializeUser();
+        const hasAccess = await checkUserAccess();
+        
+        if (!hasAccess) {
+            // Block all page content except the premium modal
+            const body = document.body;
+            const premiumModal = document.getElementById('premiumModal');
+            
+            // Hide all content except premium modal
+            Array.from(body.children).forEach(child => {
+                if (child !== premiumModal && !child.id.includes('premiumModal')) {
+                    child.style.display = 'none';
+                }
+            });
+            
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error enforcing access:', error);
+        return false;
+    }
+}
+
+// Check if user has valid trial or premium access
+async function validateAccess() {
+    if (!currentUser) {
+        return false;
+    }
+
+    // Check trial first
+    const { data: trial } = await supabase
+        .from('user_trials')
+        .select('start_date')
+        .eq('device_id', currentUser.device_id)
+        .single();
+
+    if (trial) {
+        const startDate = new Date(trial.start_date);
+        const threeDaysLater = new Date(startDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+        const now = new Date();
+
+        if (now <= threeDaysLater) {
+            return 'trial';
+        }
+    }
+
+    // Check premium
+    const { data: premium } = await supabase
+        .from('premium_users')
+        .select('expiry_date')
+        .eq('device_id', currentUser.device_id)
+        .single();
+
+    if (premium) {
+        const expiryDate = new Date(premium.expiry_date);
+        const now = new Date();
+
+        if (now <= expiryDate) {
+            return 'premium';
+        }
+    }
+
+    return false;
+}
+
 // Export functions for global access
 window.openQuiz = openQuiz;
 window.loadQuizData = loadQuizData;
@@ -946,3 +1076,5 @@ window.checkUserAccess = checkUserAccess;
 window.showPremiumModal = showPremiumModal;
 window.initiatePremiumPayment = initiatePremiumPayment;
 window.handlePaymentSuccess = handlePaymentSuccess;
+window.enforceGlobalAccess = enforceGlobalAccess;
+window.validateAccess = validateAccess;

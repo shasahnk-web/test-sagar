@@ -44,8 +44,7 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            await initializeUser();
-            const hasAccess = await checkUserAccess();
+            const hasAccess = await enforceGlobalAccess();
             if (hasAccess) {
                 await loadQuizData();
                 setupQuizHeader();
