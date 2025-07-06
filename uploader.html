@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Uploader - Test Sagar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
+                <h1>Test Sagar - Admin Upload</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="upload-container">
+            <h2>Upload Quiz Data</h2>
+            
+            <div class="auth-section" id="authSection">
+                <h3>Admin Authentication</h3>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+                <button class="btn btn-primary" onclick="authenticateAdmin()">Login</button>
+            </div>
+
+            <div class="upload-section" id="uploadSection" style="display: none;">
+                <div class="form-group">
+                    <label for="testName">Test Name:</label>
+                    <input type="text" id="testName" placeholder="Enter test name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="testDescription">Test Description:</label>
+                    <textarea id="testDescription" placeholder="Enter test description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="dataFile">Upload Data File (.js or .json):</label>
+                    <input type="file" id="dataFile" accept=".js,.json" required>
+                </div>
+
+                <div class="file-format-info">
+                    <h4>Expected File Format:</h4>
+                    <pre>{
+  "rawIds": ["id1", "id2", ...],
+  "correctAnswers": ["A", "B", ...]
+}</pre>
+                    <p>Or JavaScript file with exported rawIds and correctAnswers arrays.</p>
+                </div>
+
+                <button class="btn btn-success" onclick="uploadQuiz()">Upload Quiz</button>
+                
+                <div class="upload-status" id="uploadStatus"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Test Sagar<br>Powered by TRMS</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Admin page doesn't need trial/premium checks
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only initialize basic functionality for admin page
+        });
+    </script>
+    <script>
+        const ADMIN_PASSWORD = "admin123"; // Change this in production
+
+        function authenticateAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                alert('Incorrect password');
+            }
+        }
+
+        async function uploadQuiz() {
+            const testName = document.getElementById('testName').value.trim();
+            const testDescription = document.getElementById('testDescription').value.trim();
+            const fileInput = document.getElementById('dataFile');
+            const statusDiv = document.getElementById('uploadStatus');
+
+            if (!testName || !fileInput.files[0]) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                statusDiv.innerHTML = '<div class="loading">Processing file...</div>';
+
+                const file = fileInput.files[0];
+                const fileContent = await readFile(file);
+                
+                let data;
+                if (file.name.endsWith('.json')) {
+                    data = JSON.parse(fileContent);
+                } else if (file.name.endsWith('.js')) {
+                    // Simple extraction for JS files
+                    const rawIdsMatch = fileContent.match(/rawIds\s*=\s*\[(.*?)\]/s);
+                    const correctAnswersMatch = fileContent.match(/correctAnswers\s*=\s*\[(.*?)\]/s);
+                    
+                    if (!rawIdsMatch || !correctAnswersMatch) {
+                        throw new Error('Could not find rawIds and correctAnswers arrays in JS file');
+                    }
+                    
+                    data = {
+                        rawIds: JSON.parse('[' + rawIdsMatch[1] + ']'),
+                        correctAnswers: JSON.parse('[' + correctAnswersMatch[1] + ']')
+                    };
+                }
+
+                const { rawIds, correctAnswers } = data;
+
+                if (!rawIds || !correctAnswers || rawIds.length !== correctAnswers.length) {
+                    throw new Error('Invalid data format or mismatched array lengths');
+                }
+
+                if (rawIds.length !== 75) {
+                    throw new Error('Expected exactly 75 questions');
+                }
+
+                statusDiv.innerHTML = '<div class="loading">Creating test...</div>';
+
+                // Create test
+                const { data: testData, error: testError } = await supabase
+                    .from('tests')
+                    .insert({
+                        name: testName,
+                        description: testDescription
+                    })
+                    .select()
+                    .single();
+
+                if (testError) throw testError;
+
+                statusDiv.innerHTML = '<div class="loading">Creating questions...</div>';
+
+                // Create questions
+                const questions = [];
+                for (let i = 0; i < 75; i++) {
+                    let subject, type;
+                    
+                    if (i < 25) {
+                        subject = 'Physics';
+                        type = i >= 20 ? 'integer' : 'mcq';
+                    } else if (i < 50) {
+                        subject = 'Chemistry';
+                        type = i >= 45 ? 'integer' : 'mcq';
+                    } else {
+                        subject = 'Maths';
+                        type = i >= 70 ? 'integer' : 'mcq';
+                    }
+
+                    questions.push({
+                        test_id: testData.id,
+                        image: `https://static.pw.live/5b09189f7285894d9130ccd0/${rawIds[i]}.png`,
+                        options: type === 'mcq' ? ['A', 'B', 'C', 'D'] : [],
+                        correct: correctAnswers[i],
+                        type: type,
+                        subject: subject
+                    });
+                }
+
+                const { error: questionsError } = await supabase
+                    .from('questions')
+                    .insert(questions);
+
+                if (questionsError) throw questionsError;
+
+                statusDiv.innerHTML = '<div class="success">✅ Quiz uploaded successfully!</div>';
+                
+                // Reset form
+                document.getElementById('testName').value = '';
+                document.getElementById('testDescription').value = '';
+                document.getElementById('dataFile').value = '';
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                statusDiv.innerHTML = `<div class="error">❌ Upload failed: ${error.message}</div>`;
+            }
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+    </script>
+
+    <style>
+        .upload-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .auth-section, .upload-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .file-format-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .file-format-info pre {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .upload-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+    </style>
+</body>
+</html>

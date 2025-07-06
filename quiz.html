@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Test Sagar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="quiz-container">
+        <header class="quiz-header">
+            <div class="quiz-nav">
+                <button class="hamburger">☰</button>
+                <div class="logo">
+                    <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
+                    <span>Test Sagar</span>
+                </div>
+            </div>
+            <div class="quiz-controls">
+                <div class="timer">00:00:00</div>
+                <button class="btn btn-secondary" onclick="window.location.href='index.html'">Home</button>
+                <button class="btn btn-warning" onclick="submitQuiz()">Submit</button>
+            </div>
+        </header>
+
+        <div class="quiz-body">
+            <nav class="question-nav">
+                <!-- Navigation will be populated by JavaScript -->
+            </nav>
+
+            <main class="question-content">
+                <div class="loading">Loading question...</div>
+            </main>
+        </div>
+    </div>
+
+    <footer>
+        <p>Test Sagar<br>Powered by TRMS</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeUser();
+            const hasAccess = await checkUserAccess();
+            if (hasAccess) {
+                await loadQuizData();
+                setupQuizHeader();
+            }
+        });
+    </script>
+</body>
+</html>

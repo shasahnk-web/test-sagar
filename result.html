@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results - Test Sagar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
+                <h1>Test Sagar</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="result-container">
+        <div class="loading">Loading results...</div>
+    </main>
+
+    <footer>
+        <p>Test Sagar<br>Powered by TRMS</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeUser();
+            const hasAccess = await checkUserAccess();
+            if (hasAccess) {
+                loadResults();
+            }
+        });
+    </script>
+</body>
+</html>
