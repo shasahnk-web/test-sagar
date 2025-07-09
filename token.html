@@ -3,34 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Token Handler</title>
+  <title>Verification Status</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       padding-top: 50px;
-      background: #f0f0f0;
+      background: #f9f9f9;
     }
     .message {
-      font-size: 24px;
-      margin-top: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 30px;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       display: inline-block;
     }
     .success {
       color: #155724;
       background-color: #d4edda;
-      border: 1px solid #c3e6cb;
+      border: 2px solid #c3e6cb;
       animation: pop 0.4s ease-out;
     }
     .fail {
       color: #721c24;
       background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
+      border: 2px solid #f5c6cb;
     }
     @keyframes pop {
-      0% { transform: scale(0.9); opacity: 0; }
+      0% { transform: scale(0.95); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
     pre {
@@ -40,15 +41,15 @@
       background: #fff;
       padding: 15px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       overflow: auto;
     }
   </style>
 </head>
 <body>
 
-  <div id="statusMessage" class="message">Checking...</div>
-  <pre id="output">Waiting for token...</pre>
+  <div id="statusMessage" class="message">Checking verification...</div>
+  <pre id="output">Analyzing token...</pre>
 
   <script>
     function parseHashParams() {
@@ -69,11 +70,11 @@
 
     output.textContent = JSON.stringify(tokenData, null, 2);
 
-    if (tokenData.access_token) {
-      statusMessage.textContent = "✅ Token Received Successfully!";
+    if (tokenData.access_token && tokenData.type === 'signup') {
+      statusMessage.textContent = "✅ You are verified!";
       statusMessage.classList.add("success");
     } else {
-      statusMessage.textContent = "❌ Failed to Receive Token.";
+      statusMessage.textContent = "❌ Verification failed!";
       statusMessage.classList.add("fail");
     }
   </script>
