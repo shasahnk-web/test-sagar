@@ -5,34 +5,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Results - Test Sagar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Animated background elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+
     <header>
-        <div class="header-content">
-            <div class="logo">
-                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
-                <h1>Test Sagar</h1>
-            </div>
+        <div class="logo-container">
+            <img src="/logo.png" alt="Test Sagar" class="logo-image">
+            <h1 class="app-title">Test Sagar <span>Powered by TRMS</span></h1>
+        </div>
+        <div class="user-actions">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="material-icons">dark_mode</i>
+            </button>
         </div>
     </header>
 
     <main class="result-container">
-        <div class="loading">Loading results...</div>
+        <div class="loading animate__animated animate__pulse">
+            <div class="loading-spinner"></div>
+            <p>Calculating your results...</p>
+        </div>
     </main>
-
-    <footer>
-        <p>Test Sagar<br>Powered by TRMS</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
+            // Setup theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                if (body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    themeToggle.innerHTML = '<i class="material-icons">dark_mode</i>';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
             const hasAccess = await enforceGlobalAccess();
             if (hasAccess) {
-                loadResults();
+                setTimeout(() => {
+                    loadResults();
+                }, 1000);
             }
         });
     </script>
