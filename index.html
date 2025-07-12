@@ -1,52 +1,326 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Sagar - Quiz Platform</title>
+    <title>Test Sagar - Powered by TRMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="logo">
-                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
-                <h1>Test Sagar</h1>
-            </div>
-            <button class="hamburger" id="hamburger">☰</button>
-        </div>
-    </header>
+    <div class="app-container">
+        <!-- Animated background elements -->
+        <div class="bg-grid"></div>
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
 
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>Available Quizzes</h3>
-            <button class="close-sidebar" id="closeSidebar">×</button>
-        </div>
-        <div class="quiz-list" id="sidebarQuizList"></div>
+        <header>
+            <div class="logo-container">
+                <div class="logo">TS</div>
+                <h1 class="app-title">Test Sagar <span>Powered by TRMS</span></h1>
+            </div>
+            <div class="user-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="material-icons">dark_mode</i>
+                </button>
+                <div class="user-icon" onclick="showUserProfile()">
+                    <i class="material-icons">person</i>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Home Page -->
+            <div class="page active" id="home-page">
+                <div class="nav-container">
+                    <a href="#" class="nav-item active" onclick="showPage('home-page', this)">
+                        <i class="material-icons">home</i>
+                        <span class="nav-text">Home</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="showPage('test-list-page', this)">
+                        <i class="material-icons">assignment</i>
+                        <span class="nav-text">Tests</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="showPage('analytics-page', this)">
+                        <i class="material-icons">analytics</i>
+                        <span class="nav-text">Analytics</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="showPage('profile-page', this)">
+                        <i class="material-icons">person</i>
+                        <span class="nav-text">Profile</span>
+                    </a>
+                </div>
+
+                <h2 class="section-title animate__animated animate__fadeIn">
+                    <i class="material-icons">home</i>
+                    Welcome Back, <span class="neon-text" id="welcomeUserName">Student!</span>
+                </h2>
+
+                <h2 class="section-title animate__animated animate__fadeIn animate__delay-1s">
+                    <i class="material-icons">school</i>
+                    Choose Your Class
+                </h2>
+                <div class="class-cards">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;" onclick="showTestList('9th Grade')">
+                        <i class="material-icons">school</i>
+                        <div class="class-text">9th Grade</div>
+                    </div>
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;" onclick="showTestList('10th Grade')">
+                        <i class="material-icons">school</i>
+                        <div class="class-text">10th Grade</div>
+                    </div>
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;" onclick="showTestList('11th JEE/NEET')">
+                        <i class="material-icons">science</i>
+                        <div class="class-text">11th JEE/NEET</div>
+                    </div>
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;" onclick="showTestList('12th JEE/NEET')">
+                        <i class="material-icons">science</i>
+                        <div class="class-text">12th JEE/NEET</div>
+                    </div>
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;" onclick="showTestList('Dropper JEE/NEET')">
+                        <i class="material-icons">update</i>
+                        <div class="class-text">Dropper JEE/NEET</div>
+                    </div>
+                </div>
+
+                <h2 class="section-title animate__animated animate__fadeIn animate__delay-2s">
+                    <i class="material-icons">assignment</i>
+                    Test Types
+                </h2>
+                <div class="test-types">
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;" onclick="showTestList('Short Practice')">
+                        <i class="material-icons">timer</i>
+                        <div class="test-type-info">
+                            <h3>Short Practice</h3>
+                            <p>Quick 15-20 min tests for focused learning</p>
+                        </div>
+                    </div>
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.7s;" onclick="showTestList('Practice Tests')">
+                        <i class="material-icons">assignment</i>
+                        <div class="test-type-info">
+                            <h3>Practice Tests</h3>
+                            <p>Full-length subject tests with detailed analysis</p>
+                        </div>
+                    </div>
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.8s;" onclick="showTestList('All India Tests')">
+                        <i class="material-icons">public</i>
+                        <div class="test-type-info">
+                            <h3>All India Tests</h3>
+                            <p>Compete with students nationwide</p>
+                        </div>
+                    </div>
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.9s;" onclick="showTestList('PYQs')">
+                        <i class="material-icons">history_edu</i>
+                        <div class="test-type-info">
+                            <h3>PYQs</h3>
+                            <p>Previous year questions with solutions</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-title animate__animated animate__fadeIn animate__delay-3s">
+                    <i class="material-icons">trending_up</i>
+                    Your Performance
+                </h2>
+                <div class="performance-card animate__animated animate__fadeIn" style="animation-delay: 1s;">
+                    <p>Track your progress and improvement over time with detailed analytics</p>
+                    <div class="performance-stats" id="performanceStats">
+                        <div class="stat-item">
+                            <div class="stat-value">87%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">24</div>
+                            <div class="stat-label">Tests Taken</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">92%</div>
+                            <div class="stat-label">Completion</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">96<small>th</small></div>
+                            <div class="stat-label">Percentile</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test List Page -->
+            <div class="page" id="test-list-page">
+                <div class="test-view-header">
+                    <button class="btn btn-outline" onclick="goBack()">
+                        <i class="material-icons">arrow_back</i> Back
+                    </button>
+                    <h2 id="test-list-title" class="neon-text">Tests</h2>
+                    <div style="width: 100px;"></div>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search quizzes..." class="search-input">
+                </div>
+
+                <div class="quiz-grid" id="quizGrid">
+                    <div class="loading">Loading quizzes...</div>
+                </div>
+            </div>
+
+            <!-- Test View Page -->
+            <div class="page" id="test-view-page">
+                <div class="test-view-header">
+                    <button class="btn btn-outline" onclick="goBackToList()">
+                        <i class="material-icons">arrow_back</i> Back
+                    </button>
+                    <h2 id="test-view-title" class="neon-text">Test</h2>
+                    <div class="timer">
+                        <i class="material-icons">timer</i> <span id="time-remaining">30:00</span>
+                    </div>
+                </div>
+
+                <div class="test-view-container">
+                    <iframe id="test-iframe" class="iframe-container" src="about:blank" allow="fullscreen"></iframe>
+                </div>
+            </div>
+
+            <!-- Analytics Page -->
+            <div class="page" id="analytics-page">
+                <h2 class="section-title">
+                    <i class="material-icons">analytics</i>
+                    Your <span class="neon-text">Analytics</span>
+                </h2>
+                <div class="analytics-grid">
+                    <div class="performance-card">
+                        <h3><i class="material-icons">trending_up</i> Overall Performance</h3>
+                        <div class="performance-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">87%</div>
+                                <div class="stat-label">Accuracy</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Tests Taken</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">92%</div>
+                                <div class="stat-label">Completion</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">96<small>th</small></div>
+                                <div class="stat-label">Percentile</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="performance-card">
+                        <h3><i class="material-icons">subject</i> Subject-wise Performance</h3>
+                        <div class="subject-performance">
+                            <div class="subject-stat">
+                                <span>Physics</span>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 85%"></div>
+                                </div>
+                                <span>85%</span>
+                            </div>
+                            <div class="subject-stat">
+                                <span>Chemistry</span>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 78%"></div>
+                                </div>
+                                <span>78%</span>
+                            </div>
+                            <div class="subject-stat">
+                                <span>Mathematics</span>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 92%"></div>
+                                </div>
+                                <span>92%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="performance-card">
+                        <h3><i class="material-icons">timeline</i> Recent Tests</h3>
+                        <div class="recent-tests" id="recentTestsList">
+                            <p>No recent tests found. Take a test to see your progress!</p>
+                        </div>
+                    </div>
+                    <div class="performance-card">
+                        <h3><i class="material-icons">show_chart</i> Improvement Trend</h3>
+                        <div class="improvement-trend" id="improvementTrend">
+                            <p>Take more tests to see your improvement trend!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div class="page" id="profile-page">
+                <h2 class="section-title">
+                    <i class="material-icons">person</i>
+                    Your <span class="neon-text">Profile</span>
+                </h2>
+                <div class="profile-container">
+                    <div class="performance-card profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="material-icons">person</i>
+                            </div>
+                            <div class="profile-info">
+                            <h3 id="profileName">Loading...</h3>
+                            <p id="profileEmail">Loading...</p>
+                            <div class="subscription-status" id="subscriptionStatus">
+                                <span class="status-badge expired">Loading...</span>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Days Left</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Tests Taken</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">87%</div>
+                                <div class="stat-label">Avg Score</div>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn btn-primary" onclick="showPremiumModal()">
+                                <i class="material-icons">star</i> Upgrade to Premium
+                            </button>
+                            <button class="btn btn-secondary" onclick="logout()" style="margin-top: 0.5rem;">
+                                <i class="material-icons">logout</i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <main class="main-content">
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search quizzes..." class="search-input">
-        </div>
-        
-        <div class="quiz-grid" id="quizGrid">
-            <div class="loading">Loading quizzes...</div>
-        </div>
-    </main>
-
-    <footer>
-        <p>Test Sagar<br>Powered by TRMS</p>
-    </footer>
-
-    <!-- Name Modal -->
-    <div class="modal" id="nameModal">
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2>Welcome to Test Sagar</h2>
-            <p>Please enter your name to continue:</p>
-            <input type="text" id="nameInput" placeholder="Your name" required>
-            <button id="submitName">Continue</button>
+            <div id="loginForm">
+                <h3>Login</h3>
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button id="loginSubmit" class="btn btn-primary">Login</button>
+                <p>Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a></p>
+            </div>
+            <div id="registerForm" style="display: none;">
+                <h3>Create Account</h3>
+                <input type="text" id="registerName" placeholder="Full Name" required>
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required>
+                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                <button id="registerSubmit" class="btn btn-primary">Create Account</button>
+                <p>Already have an account? <a href="#" onclick="showLoginForm()">Login here</a></p>
+            </div>
+            <div id="authStatus" style="display: none; margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -55,13 +329,186 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize app
+            await initializeApp();
+
+            // Setup theme toggle
+            setupThemeToggle();
+
+            // Setup ripple effects
+            setupRippleEffects();
+
+            // Check access and load content
             const hasAccess = await enforceGlobalAccess();
             if (hasAccess) {
                 loadQuizzes();
                 setupSearch();
-                setupSidebar();
+                updateWelcomeMessage();
+                await loadUserProfile();
             }
         });
+
+        async function initializeApp() {
+            // Add floating animation to elements
+            const floatElements = document.querySelectorAll('.class-card, .test-type-card');
+            floatElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+        }
+
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                if (body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    themeToggle.innerHTML = '<i class="material-icons">dark_mode</i>';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
+        function setupRippleEffects() {
+            document.querySelectorAll('.btn, .class-card, .test-type-card, .quiz-card').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const x = e.clientX - e.target.getBoundingClientRect().left;
+                    const y = e.clientY - e.target.getBoundingClientRect().top;
+
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple-effect');
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 1000);
+                });
+            });
+        }
+
+        function updateWelcomeMessage() {
+            const userName = localStorage.getItem('user_name');
+            if (userName) {
+                document.getElementById('welcomeUserName').textContent = userName + '!';
+            }
+        }
+
+        function loadUserProfile() {
+            const userName = localStorage.getItem('user_name');
+            if (userName) {
+                document.getElementById('profileName').textContent = userName;
+            }
+        }
+
+        function showUserProfile() {
+            showPage('profile-page', document.querySelector('.nav-item:last-child'));
+        }
+
+        // Enhanced navigation functions
+        function showPage(pageId, navItem) {
+            // Hide all pages with fade out animation
+            document.querySelectorAll('.page').forEach(page => {
+                if (page.classList.contains('active')) {
+                    page.classList.add('animate__animated', 'animate__fadeOut');
+                    setTimeout(() => {
+                        page.classList.remove('active', 'animate__animated', 'animate__fadeOut');
+                    }, 300);
+                }
+            });
+
+            // Show selected page with fade in animation
+            setTimeout(() => {
+                const page = document.getElementById(pageId);
+                page.classList.add('active', 'animate__animated', 'animate__fadeIn');
+
+                // Update nav items
+                if (navItem) {
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    navItem.classList.add('active');
+                }
+
+                // Load page-specific data
+                if (pageId === 'analytics-page') {
+                    updateAnalyticsDisplay();
+                } else if (pageId === 'profile-page') {
+                    loadUserProfile();
+                }
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }, 300);
+        }
+
+        function showTestList(title) {
+            document.getElementById('test-list-title').textContent = title;
+            showPage('test-list-page');
+        }
+
+        function goBack() {
+            showPage('home-page', document.querySelector('.nav-item:first-child'));
+        }
+
+        function goBackToList() {
+            clearInterval(window.timerInterval);
+            document.getElementById('test-iframe').src = 'about:blank';
+            showPage('test-list-page');
+        }
+
+        function startTimer(durationInSeconds) {
+            let timer = durationInSeconds;
+            const timerDisplay = document.getElementById('time-remaining');
+
+            timerDisplay.style.color = 'var(--danger)';
+            timerDisplay.style.textShadow = 'none';
+
+            window.timerInterval = setInterval(function() {
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (timer <= 300) {
+                    timerDisplay.style.color = 'var(--accent)';
+                    timerDisplay.style.textShadow = '0 0 5px var(--accent)';
+                }
+
+                if (timer <= 60) {
+                    timerDisplay.style.color = 'var(--danger)';
+                    timerDisplay.style.textShadow = '0 0 5px var(--danger)';
+                    document.querySelector('.timer').classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
+                }
+
+                if (--timer < 0) {
+                    clearInterval(window.timerInterval);
+                    timerDisplay.textContent = "Time's up!";
+                    timerDisplay.style.color = 'var(--danger)';
+                    timerDisplay.style.textShadow = '0 0 10px var(--danger)';
+                    document.querySelector('.timer').classList.remove('animate__pulse', 'animate__infinite');
+
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate([200, 100, 200, 100, 200]);
+                    }
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
