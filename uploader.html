@@ -1,95 +1,200 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Uploader - Test Sagar</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+    <!-- Animated background elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+
     <header>
-        <div class="header-content">
-            <div class="logo">
-                <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
-                <h1>Test Sagar - Admin Upload</h1>
-            </div>
+        <div class="logo-container">
+            <div class="logo">TS</div>
+            <h1 class="app-title">Test Sagar - Admin Panel <span>Powered by TRMS</span></h1>
+        </div>
+        <div class="user-actions">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="material-icons">dark_mode</i>
+            </button>
         </div>
     </header>
 
     <main class="main-content">
         <div class="upload-container">
-            <h2>Upload Quiz Data</h2>
+            <div class="upload-header">
+                <div class="upload-icon">
+                    <i class="material-icons">cloud_upload</i>
+                </div>
+                <h2>Upload Quiz Data</h2>
+                <p>Upload your quiz questions and answers to the database</p>
+            </div>
 
             <div class="auth-section" id="authSection">
-                <h3>Admin Authentication</h3>
-                <input type="password" id="adminPassword" placeholder="Enter admin password">
-                <button class="btn btn-primary" onclick="authenticateAdmin()">Login</button>
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="material-icons">admin_panel_settings</i>
+                        <h3>Admin Authentication</h3>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="adminPassword" placeholder="Enter admin password" class="form-input">
+                    </div>
+                    <button class="btn btn-primary" onclick="authenticateAdmin()">
+                        <i class="material-icons">login</i> Login
+                    </button>
+                </div>
             </div>
 
             <div class="upload-section" id="uploadSection" style="display: none;">
-                <div class="form-group">
-                    <label for="testName">Test Name:</label>
-                    <input type="text" id="testName" placeholder="Enter test name" required>
-                </div>
+                <div class="upload-form">
+                    <div class="form-group">
+                        <label for="testName"><i class="material-icons">title</i> Test Name</label>
+                        <input type="text" id="testName" placeholder="Enter test name" required class="form-input">
+                    </div>
 
-                <div class="form-group">
-                    <label for="testDescription">Test Description:</label>
-                    <textarea id="testDescription" placeholder="Enter test description"></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="testDescription"><i class="material-icons">description</i> Test Description</label>
+                        <textarea id="testDescription" placeholder="Enter test description"
+                            class="form-textarea"></textarea>
+                    </div>
 
-                <div class="form-group">
-                    <label for="dataFile">Upload Data File (.js or .json):</label>
-                    <input type="file" id="dataFile" accept=".js,.json" required>
-                </div>
+                    <div class="form-group">
+                        <label for="dataFile"><i class="material-icons">attach_file</i> Upload Data File</label>
+                        <div class="file-upload-area" onclick="document.getElementById('dataFile').click()">
+                            <input type="file" id="dataFile" accept=".js,.json" required class="file-input">
+                            <div class="file-upload-content">
+                                <i class="material-icons">upload_file</i>
+                                <p>Click to select a file or drag and drop</p>
+                                <span>Supports .js and .json files</span>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="file-format-info">
-                    <h4>Expected File Format:</h4>
-                    <pre>{
+                    <div class="file-format-info">
+                        <div class="info-header">
+                            <i class="material-icons">info</i>
+                            <h4>Expected File Format</h4>
+                        </div>
+                        <div class="format-example">
+                            <pre>{
   "rawIds": ["id1", "id2", ...],
   "correctAnswers": ["A", "B", ...]
 }</pre>
-                    <p>Or JavaScript file with exported rawIds and correctAnswers arrays.</p>
+                        </div>
+                        <p>Or JavaScript file with exported rawIds and correctAnswers arrays.</p>
+                    </div>
+
+                    <button class="btn btn-success upload-btn" onclick="uploadQuiz()">
+                        <i class="material-icons">cloud_upload</i> Upload Quiz
+                    </button>
+
+                    <div class="upload-status" id="uploadStatus"></div>
                 </div>
-
-                <button class="btn btn-success" onclick="uploadQuiz()">Upload Quiz</button>
-
-                <div class="upload-status" id="uploadStatus"></div>
             </div>
         </div>
     </main>
-
-    <footer>
-        <p>Test Sagar<br>Powered by TRMS</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
     <script>
-        // Admin page doesn't need trial/premium checks
-        document.addEventListener('DOMContentLoaded', function() {
-            // Only initialize basic functionality for admin page
+        document.addEventListener('DOMContentLoaded', function () {
+            // Setup theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                if (body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    themeToggle.innerHTML = '<i class="material-icons">dark_mode</i>';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // Check if admin is already authenticated
+            if (localStorage.getItem('admin_auth') === 'true') {
+                adminAuthenticated = true;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            }
+
+            // File upload styling
+            const fileInput = document.getElementById('dataFile');
+            const uploadArea = document.querySelector('.file-upload-area');
+
+            fileInput.addEventListener('change', function () {
+                if (this.files[0]) {
+                    uploadArea.classList.add('has-file');
+                    uploadArea.querySelector('p').textContent = this.files[0].name;
+                } else {
+                    uploadArea.classList.remove('has-file');
+                    uploadArea.querySelector('p').textContent = 'Click to select a file or drag and drop';
+                }
+            });
         });
     </script>
     <script>
-        const ADMIN_PASSWORD = "admin123"; // Change this in production
+        const ADMIN_PASSWORD = "admin123"; // Updated admin password
+        let adminAuthenticated = false;
 
-        function authenticateAdmin() {
-            const password = document.getElementById('adminPassword').value;
+        async function authenticateAdmin() {
+            const password = document.getElementById('adminPassword').value.trim();
+
+            if (!password) {
+                alert('Please enter admin password');
+                return;
+            }
+
             if (password === ADMIN_PASSWORD) {
+                adminAuthenticated = true;
+                localStorage.setItem('admin_auth', 'true');
+
                 document.getElementById('authSection').style.display = 'none';
                 document.getElementById('uploadSection').style.display = 'block';
+
+                // Show success message
+                const statusDiv = document.getElementById('uploadStatus') || document.createElement('div');
+                statusDiv.innerHTML = '<div class="status-item success"><i class="material-icons">check_circle</i> Admin authenticated successfully!</div>';
             } else {
-                alert('Incorrect password');
+                alert('Incorrect admin password');
+                document.getElementById('adminPassword').value = '';
             }
         }
 
         async function uploadQuiz() {
+            if (!adminAuthenticated) {
+                alert('Please authenticate as admin first');
+                return;
+            }
+
             const testName = document.getElementById('testName').value.trim();
             const testDescription = document.getElementById('testDescription').value.trim();
             const fileInput = document.getElementById('dataFile');
             const statusDiv = document.getElementById('uploadStatus');
+            const uploadBtn = document.querySelector('.upload-btn');
 
             if (!testName || !fileInput.files[0]) {
                 alert('Please fill in all required fields');
@@ -97,7 +202,25 @@
             }
 
             try {
-                statusDiv.innerHTML = '<div class="loading">Processing file...</div>';
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i class="material-icons">hourglass_empty</i> Processing...';
+
+                statusDiv.innerHTML = '<div class="status-item processing"><i class="material-icons">hourglass_empty</i> Processing file...</div>';
+
+                // Initialize Supabase connection
+                const supabaseUrl = 'https://jxvkrjywedtkatfghigm.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dmtyanl3ZWR0a2F0ZmdoaWdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNjkzMTYsImV4cCI6MjA2NzY0NTMxNn0.EkYJmw1LumYRvZlrCFyklAMZBxwAhRmyiDFJO0ahXQg';
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                // Test database connection
+                const {data: testConnection, error: connectionError} = await supabase
+                    .from('tests')
+                    .select('count', {count: 'exact', head: true});
+
+                if (connectionError) {
+                    console.error('Database connection error:', connectionError);
+                    throw new Error('Database connection failed: ' + connectionError.message);
+                }
 
                 const file = fileInput.files[0];
                 const fileContent = await readFile(file);
@@ -106,7 +229,6 @@
                 if (file.name.endsWith('.json')) {
                     data = JSON.parse(fileContent);
                 } else if (file.name.endsWith('.js')) {
-                    // Simple extraction for JS files
                     const rawIdsMatch = fileContent.match(/rawIds\s*=\s*\[(.*?)\]/s);
                     const correctAnswersMatch = fileContent.match(/correctAnswers\s*=\s*\[(.*?)\]/s);
 
@@ -114,26 +236,39 @@
                         throw new Error('Could not find rawIds and correctAnswers arrays in JS file');
                     }
 
-                    data = {
-                        rawIds: JSON.parse('[' + rawIdsMatch[1] + ']'),
-                        correctAnswers: JSON.parse('[' + correctAnswersMatch[1] + ']')
-                    };
+                    try {
+                        data = {
+                            rawIds: JSON.parse('[' + rawIdsMatch[1] + ']'),
+                            correctAnswers: JSON.parse('[' + correctAnswersMatch[1] + ']')
+                        };
+                    } catch (parseError) {
+                        throw new Error('Error parsing arrays from JS file: ' + parseError.message);
+                    }
+                } else {
+                    throw new Error('Unsupported file type. Please upload .js or .json files only.');
                 }
 
-                const { rawIds, correctAnswers } = data;
+                const {rawIds, correctAnswers} = data;
 
-                if (!rawIds || !correctAnswers || rawIds.length !== correctAnswers.length) {
-                    throw new Error('Invalid data format or mismatched array lengths');
+                if (!rawIds || !correctAnswers) {
+                    throw new Error('Missing rawIds or correctAnswers in the file');
+                }
+
+                if (!Array.isArray(rawIds) || !Array.isArray(correctAnswers)) {
+                    throw new Error('rawIds and correctAnswers must be arrays');
+                }
+
+                if (rawIds.length !== correctAnswers.length) {
+                    throw new Error(`Array length mismatch: rawIds has ${rawIds.length} items, correctAnswers has ${correctAnswers.length} items`);
                 }
 
                 if (rawIds.length !== 75) {
-                    throw new Error('Expected exactly 75 questions');
+                    throw new Error(`Expected exactly 75 questions, got ${rawIds.length}`);
                 }
 
-                statusDiv.innerHTML = '<div class="loading">Creating test...</div>';
+                statusDiv.innerHTML = '<div class="status-item processing"><i class="material-icons">add_circle</i> Creating test...</div>';
 
-                // Create test
-                const { data: testData, error: testError } = await supabase
+                const {data: testData, error: testError} = await supabase
                     .from('tests')
                     .insert({
                         name: testName,
@@ -142,11 +277,13 @@
                     .select()
                     .single();
 
-                if (testError) throw testError;
+                if (testError) {
+                    console.error('Test creation error:', testError);
+                    throw new Error('Failed to create test: ' + testError.message);
+                }
 
-                statusDiv.innerHTML = '<div class="loading">Creating questions...</div>';
+                statusDiv.innerHTML = '<div class="status-item processing"><i class="material-icons">quiz</i> Creating questions...</div>';
 
-                // Create questions
                 const questions = [];
                 for (let i = 0; i < 75; i++) {
                     let subject, type;
@@ -172,22 +309,35 @@
                     });
                 }
 
-                const { error: questionsError } = await supabase
-                    .from('questions')
-                    .insert(questions);
+                // Insert questions in batches to avoid timeout
+                const batchSize = 25;
+                for (let i = 0; i < questions.length; i += batchSize) {
+                    const batch = questions.slice(i, i + batchSize);
+                    const {error: batchError} = await supabase
+                        .from('questions')
+                        .insert(batch);
 
-                if (questionsError) throw questionsError;
+                    if (batchError) throw new Error(`Failed to insert questions batch ${Math.floor(i / batchSize) + 1}: ` + batchError.message);
 
-                statusDiv.innerHTML = '<div class="success">✅ Quiz uploaded successfully!</div>';
+                    statusDiv.innerHTML = `<div class="status-item processing"><i class="material-icons">quiz</i> Creating questions... (${Math.min(i + batchSize, questions.length)}/75)</div>`;
+                }
+
+                statusDiv.innerHTML = '<div class="status-item success"><i class="material-icons">check_circle</i> Quiz uploaded successfully!</div>';
 
                 // Reset form
                 document.getElementById('testName').value = '';
                 document.getElementById('testDescription').value = '';
                 document.getElementById('dataFile').value = '';
+                const uploadArea = document.querySelector('.file-upload-area');
+                uploadArea.classList.remove('has-file');
+                uploadArea.querySelector('p').textContent = 'Click to select a file or drag and drop';
 
             } catch (error) {
                 console.error('Upload error:', error);
-                statusDiv.innerHTML = `<div class="error">❌ Upload failed: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div class="status-item error"><i class="material-icons">error</i> Upload failed: ${error.message}</div>`;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="material-icons">cloud_upload</i> Upload Quiz';
             }
         }
 
@@ -200,65 +350,6 @@
             });
         }
     </script>
-
-    <style>
-        .upload-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .auth-section, .upload-section {
-            margin-bottom: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .form-group textarea {
-            height: 100px;
-            resize: vertical;
-        }
-
-        .file-format-info {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 6px;
-            margin: 1rem 0;
-        }
-
-        .file-format-info pre {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-
-        .upload-status {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 6px;
-        }
-    </style>
 </body>
+
 </html>
