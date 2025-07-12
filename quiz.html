@@ -5,39 +5,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz - Test Sagar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Animated background elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+
     <div class="quiz-container">
         <header class="quiz-header">
             <div class="quiz-nav">
-                <button class="hamburger">☰</button>
-                <div class="logo">
-                    <img src="/logo" alt="Test Sagar" onerror="this.style.display='none'">
-                    <span>Test Sagar</span>
+                <button class="hamburger" onclick="document.querySelector('.question-nav').classList.toggle('open')">
+                    <i class="material-icons">menu</i>
+                </button>
+                <div class="logo-container">
+                    <div class="logo">TS</div>
+                    <div class="header-title">
+                        <h1>Test Sagar</h1>
+                        <span>Powered by TRMS</span>
+                    </div>
                 </div>
             </div>
             <div class="quiz-controls">
-                <div class="timer">00:00:00</div>
-                <button class="btn btn-secondary" onclick="window.location.href='index.html'">Home</button>
-                <button class="btn btn-warning" onclick="submitQuiz()">Submit</button>
+                <div class="timer">
+                    <i class="material-icons">timer</i>
+                    <span>00:00:00</span>
+                </div>
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                    <i class="material-icons">home</i> Home
+                </button>
+                <button class="btn btn-warning" onclick="submitQuiz()">
+                    <i class="material-icons">send</i> Submit
+                </button>
             </div>
         </header>
 
         <div class="quiz-body">
             <nav class="question-nav">
+                <div class="nav-header">
+                    <h3>Questions</h3>
+                    <button class="nav-close" onclick="document.querySelector('.question-nav').classList.remove('open')">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
                 <!-- Navigation will be populated by JavaScript -->
             </nav>
 
             <main class="question-content">
-                <div class="loading">Loading question...</div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading question...</p>
+                </div>
             </main>
         </div>
     </div>
-
-    <footer>
-        <p>Test Sagar<br>Powered by TRMS</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
