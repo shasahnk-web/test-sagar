@@ -1,7 +1,7 @@
 // Updated code with new Supabase configuration and enhanced user management
 // Supabase configuration
-const supabaseUrl = 'https://jxvkrjywedtkatfghigm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dmtyanl3ZWR0a2F0ZmdoaWdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNjkzMTYsImV4cCI6MjA2NzY0NTMxNn0.EkYJmw1LumYRvZlrCFyklAMZBxwAhRmyiDFJO0ahXQg';
+const supabaseUrl = 'https://gaqyuylvawgoxuaevhsi.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcXl1eWx2YXdnb3h1YWV2aHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MDExNTQsImV4cCI6MjA2Nzk3NzE1NH0.tRJXi5vTSopCza_61sYu2ccOrk8LR7UvJ07JPP07OEI';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // Global variables
@@ -68,13 +68,7 @@ async function initializeUser() {
     // Check access status
     await checkGlobalAccess();
 
-    // Load user analytics
-    await loadUserAnalytics();
-    
-    // Update displays
-    updateHomePageStats();
-    updateWelcomeMessage();
-    loadUserProfile();
+    // Profile data will be loaded in DOMContentLoaded event
 }
 
 async function ensureUserExists() {
@@ -316,7 +310,13 @@ async function handlePaymentSuccess(paymentResponse) {
             throw new Error(`Failed to activate premium: ${premiumError.message}`);
         }
 
+        // Update access status immediately
         accessStatus = 'premium';
+
+        // Clear all caches to force fresh data load
+        clearAllCache();
+        profileDataCache = null;
+        profileCacheTimestamp = null;
 
         // Update the modal to show success
         if (premiumModal) {
@@ -331,10 +331,10 @@ async function handlePaymentSuccess(paymentResponse) {
             `;
         }
 
-        // Reload after a short delay to show success message
+        // Force immediate reload to show premium status
         setTimeout(() => {
             window.location.reload();
-        }, 3000);
+        }, 2000);
 
     } catch (error) {
         console.error('Error updating premium status:', error);
@@ -383,9 +383,42 @@ async function updateUserProfile(newName, newEmail) {
 
         if (profileError) throw profileError;
 
+        // Also update premium_users table if user is premium
+        if (accessStatus === 'premium') {
+            const { error: premiumUpdateError } = await supabase
+                .from('premium_users')
+                .update({
+                    name: newName,
+                    email: newEmail
+                })
+                .eq('user_id', currentUser.id);
+
+            if (premiumUpdateError) {
+                console.warn('Error updating premium user profile:', premiumUpdateError);
+            }
+        }
+
+        // Also update user_trials table if user is on trial
+        if (accessStatus === 'trial') {
+            const { error: trialUpdateError } = await supabase
+                .from('user_trials')
+                .update({
+                    name: newName,
+                    email: newEmail
+                })
+                .eq('user_id', currentUser.id);
+
+            if (trialUpdateError) {
+                console.warn('Error updating trial user profile:', trialUpdateError);
+            }
+        }
+
         // Update current user object
         currentUser.name = newName;
         currentUser.email = newEmail;
+
+        // Clear cache to force fresh data load
+        invalidateProfileCache();
 
         return true;
     } catch (error) {
@@ -572,12 +605,26 @@ async function logout() {
         await supabase.auth.signOut();
         currentUser = null;
         userSession = null;
-        localStorage.clear();
+
+        // Clear all cached data
+        clearAllCache();
+
         window.location.reload();
     } catch (error) {
         console.error('Error logging out:', error);
         alert('Error logging out. Please try again.');
     }
+}
+
+// Function to clear all cached data
+function clearAllCache() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.includes('profile_data_') || key.includes('quizzes_') || key.includes('_timestamp')) {
+            localStorage.removeItem(key);
+        }
+    });
+    console.log('All cache cleared');
 }
 
 async function checkUserAccess() {
@@ -600,7 +647,15 @@ async function checkUserAccess() {
 
 // Enhanced Analytics Functions
 async function loadUserAnalytics() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        console.log('No current user, loading default analytics');
+        calculateUserAnalytics([]);
+        updateAnalyticsDisplay();
+        updateHomePageStats();
+        return;
+    }
+
+    console.log('Loading analytics data for user:', currentUser.id);
 
     try {
         const { data: results, error } = await supabase
@@ -611,17 +666,25 @@ async function loadUserAnalytics() {
 
         if (error) throw error;
 
+        console.log('Loaded test results:', results?.length || 0);
         calculateUserAnalytics(results || []);
         updateAnalyticsDisplay();
         updateHomePageStats();
 
     } catch (error) {
         console.error('Error loading analytics:', error);
+        // Load defaults on error
+        calculateUserAnalytics([]);
+        updateAnalyticsDisplay();
+        updateHomePageStats();
     }
 }
 
 function calculateUserAnalytics(results) {
+    console.log('Calculating analytics for', results.length, 'results');
+
     if (results.length === 0) {
+        // Show realistic demo data when no tests taken
         userAnalytics = {
             totalTests: 0,
             totalCorrect: 0,
@@ -630,9 +693,9 @@ function calculateUserAnalytics(results) {
             completionRate: 0,
             percentile: 0,
             subjectStats: {
-                Physics: { correct: 15, total: 20, percentage: 75 },
-                Chemistry: { correct: 16, total: 20, percentage: 80 },
-                Maths: { correct: 18, total: 20, percentage: 90 }
+                Physics: { correct: 0, total: 0, percentage: 0 },
+                Chemistry: { correct: 0, total: 0, percentage: 0 },
+                Mathematics: { correct: 0, total: 0, percentage: 0 }
             },
             recentTests: [],
             improvementTrend: []
@@ -647,29 +710,38 @@ function calculateUserAnalytics(results) {
     userAnalytics.accuracy = userAnalytics.totalQuestions > 0 ? 
         Math.round((userAnalytics.totalCorrect / userAnalytics.totalQuestions) * 100) : 0;
 
-    // Calculate completion rate (assuming some target)
-    userAnalytics.completionRate = Math.min(100, Math.round((userAnalytics.totalTests / 30) * 100));
+    // Calculate completion rate based on tests taken vs expected frequency
+    const daysActive = Math.max(1, Math.ceil((Date.now() - new Date(results[results.length - 1].completed_at).getTime()) / (24 * 60 * 60 * 1000)));
+    const expectedTests = Math.min(30, daysActive * 0.5); // Expect 0.5 tests per day, max 30
+    userAnalytics.completionRate = Math.min(100, Math.round((userAnalytics.totalTests / expectedTests) * 100));
 
-    // Calculate percentile based on performance
-    const avgScore = userAnalytics.accuracy;
-    if (avgScore >= 90) userAnalytics.percentile = 95 + Math.floor(Math.random() * 4);
-    else if (avgScore >= 80) userAnalytics.percentile = 85 + Math.floor(Math.random() * 10);
-    else if (avgScore >= 70) userAnalytics.percentile = 70 + Math.floor(Math.random() * 15);
-    else if (avgScore >= 60) userAnalytics.percentile = 55 + Math.floor(Math.random() * 15);
-    else userAnalytics.percentile = 30 + Math.floor(Math.random() * 25);
+    // Percentile calculation removed
+    userAnalytics.percentile = 0;
 
     // Calculate subject-wise performance
     userAnalytics.subjectStats = {};
+    const defaultSubjects = ['Physics', 'Chemistry', 'Mathematics'];
+
+    // Initialize default subjects
+    defaultSubjects.forEach(subject => {
+        userAnalytics.subjectStats[subject] = { correct: 0, total: 0, percentage: 0 };
+    });
+
     results.forEach(result => {
         if (result.subject_stats) {
             try {
-                const subjects = JSON.parse(result.subject_stats);
+                const subjects = typeof result.subject_stats === 'string' ? 
+                    JSON.parse(result.subject_stats) : result.subject_stats;
+
                 Object.keys(subjects).forEach(subject => {
-                    if (!userAnalytics.subjectStats[subject]) {
-                        userAnalytics.subjectStats[subject] = { correct: 0, total: 0 };
+                    // Normalize subject names
+                    const normalizedSubject = subject === 'Maths' ? 'Mathematics' : subject;
+
+                    if (!userAnalytics.subjectStats[normalizedSubject]) {
+                        userAnalytics.subjectStats[normalizedSubject] = { correct: 0, total: 0, percentage: 0 };
                     }
-                    userAnalytics.subjectStats[subject].correct += subjects[subject].correct;
-                    userAnalytics.subjectStats[subject].total += subjects[subject].total;
+                    userAnalytics.subjectStats[normalizedSubject].correct += subjects[subject].correct || 0;
+                    userAnalytics.subjectStats[normalizedSubject].total += subjects[subject].total || 0;
                 });
             } catch (e) {
                 console.error('Error parsing subject stats:', e);
@@ -677,13 +749,23 @@ function calculateUserAnalytics(results) {
         }
     });
 
+    // Calculate percentages for subjects
+    Object.keys(userAnalytics.subjectStats).forEach(subject => {
+        const stats = userAnalytics.subjectStats[subject];
+        stats.percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+    });
+
     // Calculate improvement trend (last 5 tests)
     userAnalytics.recentTests = results.slice(0, 5);
-    userAnalytics.improvementTrend = userAnalytics.recentTests.map(test => test.percentage || 0);
+    userAnalytics.improvementTrend = userAnalytics.recentTests.reverse().map(test => test.percentage || 0);
+
+    console.log('Calculated analytics:', userAnalytics);
 }
 
 function updateAnalyticsDisplay() {
-    // Update analytics page
+    console.log('Updating analytics display with:', userAnalytics);
+
+    // Update analytics page overall performance
     const statsContainer = document.querySelector('#analytics-page .performance-stats');
     if (statsContainer) {
         statsContainer.innerHTML = `
@@ -699,53 +781,53 @@ function updateAnalyticsDisplay() {
                 <div class="stat-value">${userAnalytics.completionRate}%</div>
                 <div class="stat-label">Completion</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value">${userAnalytics.percentile}<small>th</small></div>
-                <div class="stat-label">Percentile</div>
-            </div>
         `;
+        console.log('Updated analytics overall performance stats');
     }
 
     // Update subject performance
-    const subjectContainer = document.querySelector('.subject-performance');
+    const subjectContainer = document.querySelector('#analytics-page .subject-performance');
     if (subjectContainer) {
-        if (Object.keys(userAnalytics.subjectStats).length > 0) {
-            subjectContainer.innerHTML = Object.entries(userAnalytics.subjectStats).map(([subject, stats]) => {
-                const percentage = stats.percentage || (stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0);
-                return `
+        const hasRealData = Object.values(userAnalytics.subjectStats).some(stats => stats.total > 0);
+
+        if (hasRealData) {
+            subjectContainer.innerHTML = Object.entries(userAnalytics.subjectStats)
+                .filter(([subject, stats]) => stats.total > 0)
+                .map(([subject, stats]) => `
                     <div class="subject-stat">
                         <span class="subject-name">${subject}</span>
                         <div class="progress-bar">
-                            <div class="progress" style="width: ${percentage}%"></div>
+                            <div class="progress" style="width: ${stats.percentage}%"></div>
                         </div>
-                        <span class="percentage">${percentage}%</span>
+                        <span class="percentage">${stats.percentage}%</span>
                     </div>
-                `;
-            }).join('');
+                `).join('');
+            console.log('Updated subject performance with real data');
         } else {
             subjectContainer.innerHTML = `
                 <div class="subject-stat">
                     <span class="subject-name">Physics</span>
                     <div class="progress-bar">
-                        <div class="progress" style="width: 75%"></div>
+                        <div class="progress" style="width: 0%"></div>
                     </div>
-                    <span class="percentage">75%</span>
+                    <span class="percentage">0%</span>
                 </div>
                 <div class="subject-stat">
                     <span class="subject-name">Chemistry</span>
                     <div class="progress-bar">
-                        <div class="progress" style="width: 80%"></div>
+                        <div class="progress" style="width: 0%"></div>
                     </div>
-                    <span class="percentage">80%</span>
+                    <span class="percentage">0%</span>
                 </div>
                 <div class="subject-stat">
                     <span class="subject-name">Mathematics</span>
                     <div class="progress-bar">
-                        <div class="progress" style="width: 90%"></div>
+                        <div class="progress" style="width: 0%"></div>
                     </div>
-                    <span class="percentage">90%</span>
+                    <span class="percentage">0%</span>
                 </div>
             `;
+            console.log('Updated subject performance with default data (no tests taken)');
         }
     }
 
@@ -762,20 +844,23 @@ function updateAnalyticsDisplay() {
                     <div class="test-score">${test.percentage}%</div>
                 </div>
             `).join('');
+            console.log('Updated recent tests with real data');
         } else {
             recentTestsContainer.innerHTML = '<p>No recent tests found. Take a test to see your progress!</p>';
+            console.log('Updated recent tests with default message');
         }
     }
 
-    // Add improvement trend chart
+    // Update improvement trend chart
     const trendContainer = document.getElementById('improvementTrend');
     if (trendContainer) {
         if (userAnalytics.improvementTrend.length > 0) {
+            const maxScore = Math.max(...userAnalytics.improvementTrend, 50); // Ensure reasonable scale
             trendContainer.innerHTML = `
                 <div class="trend-chart">
                     ${userAnalytics.improvementTrend.map((score, index) => `
-                        <div class="trend-bar" style="height: ${Math.max(score, 10)}%; background: linear-gradient(to top, var(--primary), var(--secondary));">
-                            <span class="trend-score">${score}%</span>
+                        <div class="trend-bar" style="height: ${Math.max((score / maxScore) * 100, 10)}%; background: linear-gradient(to top, var(--primary), var(--secondary));">
+                            <span class="trend-score">${score}%span>
                         </div>
                     `).join('')}
                 </div>
@@ -783,8 +868,10 @@ function updateAnalyticsDisplay() {
                     Last ${userAnalytics.improvementTrend.length} tests performance
                 </p>
             `;
+            console.log('Updated improvement trend with real data');
         } else {
             trendContainer.innerHTML = '<p>Take more tests to see your improvement trend!</p>';
+            console.log('Updated improvement trend with default message');
         }
     }
 }
@@ -792,17 +879,15 @@ function updateAnalyticsDisplay() {
 function updateHomePageStats() {
     const homeStats = document.getElementById('performanceStats');
     if (homeStats) {
-        // Show actual user data or reasonable defaults
         const accuracy = userAnalytics.accuracy || 0;
         const totalTests = userAnalytics.totalTests || 0;
         const completionRate = userAnalytics.completionRate || 0;
         const percentile = userAnalytics.percentile || 0;
-        
+
         homeStats.innerHTML = `
             <div class="stat-item">
                 <div class="stat-value">${accuracy}%</div>
-                <div class="stat-label">Accuracy</div>
-            </div>
+                <div class="stat-label">Accuracy            </div>
             <div class="stat-item">
                 <div class="stat-value">${totalTests}</div>
                 <div class="stat-label">Tests Taken</div>
@@ -811,17 +896,33 @@ function updateHomePageStats() {
                 <div class="stat-value">${completionRate}%</div>
                 <div class="stat-label">Completion</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value">${percentile}<small>th</small></div>
-                <div class="stat-label">Percentile</div>
-            </div>
         `;
+        console.log('Updated home page stats with:', { accuracy, totalTests, completionRate, percentile });
     }
 }
 
 // Quiz loading functions
-async function loadQuizzes() {
+async function loadQuizzes(streamFilter = null) {
     try {
+        // Check cache first
+        const cacheKey = streamFilter ? `quizzes_${streamFilter}` : 'quizzes_all';
+        const cachedQuizzes = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+
+        if (cachedQuizzes && cacheTimestamp) {
+            const age = Date.now() - parseInt(cacheTimestamp);
+            const tenMinutes = 10 * 60 * 1000; // Cache quizzes for 10 minutes
+
+            if (age < tenMinutes) {
+                console.log('Using cached quiz data');
+                quizzes = JSON.parse(cachedQuizzes);
+                console.log('Loaded quizzes from cache:', quizzes.length);
+                displayQuizzes(quizzes);
+                updateSidebar(quizzes);
+                return;
+            }
+        }
+
         // Test database connection first
         const { data: testConnection, error: connectionError } = await supabase
             .from('tests')
@@ -832,15 +933,28 @@ async function loadQuizzes() {
             throw new Error('Database connection failed');
         }
 
-        const { data, error } = await supabase
+        let query = supabase
             .from('tests')
             .select('*')
             .order('created_at', { ascending: false });
 
+        // Apply stream filter if provided
+        if (streamFilter) {
+            // Include tests with 'All' stream when filtering for specific streams
+            query = query.or(`stream.eq.${streamFilter},stream.eq.All`);
+        }
+
+        const { data, error } = await query;
+
         if (error) throw error;
 
         quizzes = data || [];
-        console.log('Loaded quizzes:', quizzes.length);
+        console.log('Loaded fresh quizzes from database:', quizzes.length);
+
+        // Cache the quiz data
+        localStorage.setItem(cacheKey, JSON.stringify(quizzes));
+        localStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+
         displayQuizzes(quizzes);
         updateSidebar(quizzes);
     } catch (error) {
@@ -863,7 +977,7 @@ function displayQuizzes(quizzesToShow) {
     const quizGrid = document.getElementById('quizGrid');
 
     if (!quizGrid) {
-        console.error('Quiz grid element not found');
+        // Quiz grid doesn't exist on this page (e.g., quiz.html), so return silently
         return;
     }
 
@@ -882,7 +996,7 @@ function displayQuizzes(quizzesToShow) {
         <div class="quiz-card animate__animated animate__fadeInUp" onclick="openQuiz('${quiz.id}')">
             <div class="quiz-card-header">
                 <i class="material-icons">assignment</i>
-                <div class="quiz-difficulty">Medium</div>
+                <div class="quiz-difficulty">${quiz.stream || 'General'}</div>
             </div>
             <h3>${quiz.name}</h3>
             <p>${quiz.description || 'Comprehensive test covering all topics'}</p>
@@ -890,6 +1004,7 @@ function displayQuizzes(quizzesToShow) {
                 <div class="quiz-stats">
                     <span><i class="material-icons">timer</i> 3 hrs</span>
                     <span><i class="material-icons">quiz</i> 75 questions</span>
+                    ${quiz.stream ? `<span><i class="material-icons">school</i> ${quiz.stream}</span>` : ''}
                 </div>
                 <div class="quiz-action">
                     <span>Take Quiz →</span>
@@ -919,7 +1034,8 @@ function setupSearch() {
             const searchTerm = e.target.value.toLowerCase();
             const filteredQuizzes = quizzes.filter(quiz => 
                 quiz.name.toLowerCase().includes(searchTerm) ||
-                (quiz.description && quiz.description.toLowerCase().includes(searchTerm))
+                (quiz.description && quiz.description.toLowerCase().includes(searchTerm)) ||
+                (quiz.stream && quiz.stream.toLowerCase().includes(searchTerm))
             );
             displayQuizzes(filteredQuizzes);
             updateSidebar(filteredQuizzes);
@@ -990,8 +1106,42 @@ function setupQuizNavigation() {
     const questionNav = document.querySelector('.question-nav');
     if (!questionNav) return;
 
-    const subjects = ['Physics', 'Chemistry', 'Maths'];
-    let navHTML = '';
+    const subjects = ['Chemistry', 'Maths', 'Physics'];
+    let navHTML = `
+        <div class="nav-header">
+            <div class="nav-title">
+                <i class="material-icons">quiz</i>
+                <h3>Question Navigation</h3>
+            </div>
+            <button class="nav-close" id="navCloseBtn">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+        <div class="nav-content">
+            <div class="quiz-progress">
+                <div class="progress-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="answeredCount">0</span>
+                        <span class="stat-label">Answered</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="remainingCount">${questions.length}</span>
+                        <span class="stat-label">Remaining</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="markedCount">0</span>
+                        <span class="stat-label">Marked</span>
+                    </div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress" id="overallProgress" style="width: 0%"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0% Complete</span>
+                </div>
+            </div>
+            <div class="subjects-container">
+    `;
 
     subjects.forEach(subject => {
         const subjectQuestions = questions.filter(q => q.subject === subject);
@@ -1000,7 +1150,7 @@ function setupQuizNavigation() {
         navHTML += `
             <div class="subject-section" data-subject="${subject}">
                 <div class="subject-header" onclick="toggleSubjectSection('${subject}')">
-                    <span>${subject} (${subjectQuestions.length})</span>
+                    <span>${subject} (${subjectQuestions.length} questions)</span>
                     <span class="toggle-icon">▼</span>
                 </div>
                 <div class="question-numbers">
@@ -1013,12 +1163,34 @@ function setupQuizNavigation() {
         `;
     });
 
-    questionNav.innerHTML = navHTML;
+    navHTML += `
+            </div>
+            <div class="legend">
+                <h4>Legend</h4>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color current"></div>
+                        <span>Current</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color answered"></div>
+                        <span>Answered</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color marked"></div>
+                        <span>Marked</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color skipped"></div>
+                        <span>Skipped</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
-    const firstSection = questionNav.querySelector('.subject-section');
-    if (firstSection) {
-        firstSection.classList.add('expanded');
-    }
+    questionNav.innerHTML = navHTML;
+    updateQuizProgress();
 }
 
 function toggleSubjectSection(subject) {
@@ -1028,6 +1200,16 @@ function toggleSubjectSection(subject) {
         const icon = section.querySelector('.toggle-icon');
         if (icon) {
             icon.textContent = section.classList.contains('expanded') ? '▲' : '▼';
+        }
+
+        // Animate the toggle
+        const questionNumbers = section.querySelector('.question-numbers');
+        if (questionNumbers) {
+            if (section.classList.contains('expanded')) {
+                questionNumbers.style.maxHeight = questionNumbers.scrollHeight + 'px';
+            } else {
+                questionNumbers.style.maxHeight = '0px';
+            }
         }
     }
 }
@@ -1040,6 +1222,42 @@ function setupQuizHeader() {
         hamburger.addEventListener('click', () => {
             questionNav.classList.toggle('open');
         });
+
+            // Touch gestures for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            let touchStartY = 0;
+            let touchEndY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const swipeDistance = touchEndX - touchStartX;
+                const verticalDistance = Math.abs(touchEndY - touchStartY);
+
+                // Only handle horizontal swipes (ignore if too much vertical movement)
+                if (verticalDistance > swipeThreshold) return;
+
+                // Swipe right to open sidebar (when closed)
+                if (swipeDistance > swipeThreshold && !questionNav.classList.contains('open') && touchStartX < 50) {
+                    openSidebar();
+                }
+
+                // Swipe left to close sidebar (when open)
+                if (swipeDistance < -swipeThreshold && questionNav.classList.contains('open')) {
+                    closeSidebar();
+                }
+            }
 
         // Close nav when clicking outside on mobile
         document.addEventListener('click', (e) => {
@@ -1173,7 +1391,7 @@ function setIntegerAnswer(value, questionIndex) {
 function updateQuestionNavigation() {
     const questionBtns = document.querySelectorAll('.question-btn');
     questionBtns.forEach((btn, index) => {
-        btn.classList.remove('current', 'answered', 'marked');
+        btn.classList.remove('current', 'answered', 'marked', 'skipped');
 
         if (index === currentQuestionIndex) {
             btn.classList.add('current');
@@ -1187,6 +1405,29 @@ function updateQuestionNavigation() {
             btn.classList.add('marked');
         }
     });
+
+    updateQuizProgress();
+}
+
+function updateQuizProgress() {
+    const totalQuestions = questions.length;
+    const answeredCount = Object.keys(userAnswers).length;
+    const markedCount = markedQuestions.size;
+    const remainingCount = totalQuestions - answeredCount;
+    const progressPercentage = Math.round((answeredCount / totalQuestions) * 100);
+
+    // Update progress stats
+    const answeredCountEl = document.getElementById('answeredCount');
+    const remainingCountEl = document.getElementById('remainingCount');
+    const markedCountEl = document.getElementById('markedCount');
+    const overallProgressEl = document.getElementById('overallProgress');
+    const progressTextEl = document.getElementById('progressText');
+
+    if (answeredCountEl) answeredCountEl.textContent = answeredCount;
+    if (remainingCountEl) remainingCountEl.textContent = remainingCount;
+    if (markedCountEl) markedCountEl.textContent = markedCount;
+    if (overallProgressEl) overallProgressEl.style.width = `${progressPercentage}%`;
+    if (progressTextEl) progressTextEl.textContent = `${progressPercentage}% Complete`;
 }
 
 function goToQuestion(index) {
@@ -1636,7 +1877,7 @@ async function retryPaymentActivation(paymentId) {
                     <h2 style="color: var(--secondary);">🎉 Success!</h2>
                     <p style="color: var(--text-primary);">Premium access activated successfully!</p>
                     <p style="color: var(--text-secondary); margin: 1rem 0;">Payment ID: ${paymentId}</p>
-                    <button onclick="window.location.reload()" style="background: var(--secondary); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-top: 1rem;">Continue</button>
+                    <button onclick="window.location.reload()" style="background: var(--secondary);color: white; border:none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-top: 1rem;">Continue</button>
                 </div>
             `;
         }
@@ -1663,98 +1904,477 @@ async function retryPaymentActivation(paymentId) {
     }
 }
 
-// Load user profile information
-async function loadUserProfile() {
-    if (!currentUser) return;
+// Global profile cache variables
+let profileDataCache = null;
+let profileCacheTimestamp = null;
 
-    // Update profile information with real user data
-    const profileName = document.getElementById('profileName');
-    const profileEmail = document.getElementById('profileEmail');
-    const subscriptionStatus = document.getElementById('subscriptionStatus');
+// Load user profile information with persistent caching
+async function loadUserProfile(forceRefresh = false) {
+    if (!currentUser) {
+        console.log('No current user, skipping profile load');
+        return;
+    }
 
-    if (profileName) profileName.textContent = currentUser.name || 'User';
-    if (profileEmail) profileEmail.textContent = currentUser.email || 'No email';
+    const cacheKey = `profile_data_${currentUser.id}`;
+    const cacheTimestampKey = `${cacheKey}_timestamp`;
 
-    // Fetch and calculate accurate subscription details
-    let daysLeft = 0;
-    let statusText = 'Expired';
-    let statusClass = 'expired';
+    // Check if we should use cached data
+    if (!forceRefresh) {
+        // First check in-memory cache
+        if (profileDataCache && profileCacheTimestamp) {
+            const age = Date.now() - profileCacheTimestamp;
+            const thirtyMinutes = 30 * 60 * 1000; // Cache for 30 minutes in memory
+
+            if (age < thirtyMinutes) {
+                console.log('Using in-memory profile cache');
+                updateProfileElementsDirectly(profileDataCache);
+                return;
+            }
+        }
+
+        // Then check localStorage cache  
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
+
+        if (cachedData && cacheTimestamp) {
+            const age = Date.now() - parseInt(cacheTimestamp);
+            const oneHour = 60 * 60 * 1000; // Cache in localStorage for 1 hour
+
+            if (age < oneHour) {
+                console.log('Using localStorage profile cache');
+                const parsed = JSON.parse(cachedData);
+
+                // Update global variables from cache
+                currentUser.name = parsed.name;
+                currentUser.email = parsed.email;
+                accessStatus = parsed.accessStatus;
+                userAnalytics = parsed.userAnalytics;
+
+                // Update in-memory cache
+                profileDataCache = parsed;
+                profileCacheTimestamp = parseInt(cacheTimestamp);
+
+                // Update UI immediately
+                updateProfileElementsDirectly(parsed);
+                return;
+            }
+        }
+    }
+
+    console.log('Loading fresh profile data from database...');
 
     try {
-        if (accessStatus === 'trial') {
-            const { data: trial } = await supabase
-                .from('user_trials')
-                .select('start_date')
+        // Fetch ALL profile data in parallel
+        const [userProfileResult, premiumResult, trialResult, analyticsResult] = await Promise.allSettled([
+            supabase
+                .from('user_profiles')
+                .select('*')
                 .eq('user_id', currentUser.id)
-                .single();
+                .single(),
 
-            if (trial) {
-                const startDate = new Date(trial.start_date);
-                const threeDaysLater = new Date(startDate.getTime() + (3 * 24 * 60 * 60 * 1000));
-                const now = new Date();
-                const remainingTime = threeDaysLater - now;
-                daysLeft = Math.max(0, Math.ceil(remainingTime / (24 * 60 * 60 * 1000)));
-                
-                if (daysLeft > 0) {
-                    statusText = `Trial Active (${daysLeft} days left)`;
-                    statusClass = 'trial';
-                } else {
-                    statusText = 'Trial Expired';
-                    statusClass = 'expired';
-                }
-            }
-        } else if (accessStatus === 'premium') {
-            const { data: premium } = await supabase
+            supabase
                 .from('premium_users')
-                .select('expiry_date')
+                .select('*')
                 .eq('user_id', currentUser.id)
-                .single();
+                .single(),
 
-            if (premium) {
-                const expiryDate = new Date(premium.expiry_date);
-                const now = new Date();
-                const remainingTime = expiryDate - now;
-                daysLeft = Math.max(0, Math.ceil(remainingTime / (24 * 60 * 60 * 1000)));
-                
-                if (daysLeft > 0) {
-                    statusText = `Premium Active (${daysLeft} days left)`;
-                    statusClass = 'premium';
-                } else {
-                    statusText = 'Premium Expired';
-                    statusClass = 'expired';
-                }
+            supabase
+                .from('user_trials')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single(),
+
+            supabase
+                .from('test_results')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('completed_at', { ascending: false })
+        ]);
+
+        // Process user profile data
+        if (userProfileResult.status === 'fulfilled' && userProfileResult.value.data) {
+            const profileData = userProfileResult.value.data;
+            currentUser.name = profileData.name || currentUser.name || 'User';
+            currentUser.email = profileData.email || currentUser.email || 'No email';
+        } else {
+            currentUser.name = currentUser.name || userSession?.user?.user_metadata?.full_name || userSession?.user?.email || 'User';
+            currentUser.email = currentUser.email || userSession?.user?.email || 'No email';
+        }
+
+        // Process subscription status
+        let daysLeft = 0;
+        let statusText = 'No Active Subscription';
+        let statusClass = 'expired';
+
+        // Check premium status first
+        if (premiumResult.status === 'fulfilled' && premiumResult.value.data) {
+            const premium = premiumResult.value.data;
+            const expiryDate = new Date(premium.expiry_date);
+            const now = new Date();
+            const remainingTime = expiryDate - now;
+            daysLeft = Math.max(0, Math.ceil(remainingTime / (24 * 60 * 60 * 1000)));
+
+            if (daysLeft > 0) {
+                statusText = `Premium Active`;
+                statusClass = 'premium';
+                accessStatus = 'premium';
+            } else {
+                statusText = 'Premium Expired';
+                statusClass = 'expired';
+                accessStatus = 'expired';
             }
+        } else if (trialResult.status === 'fulfilled' && trialResult.value.data) {
+            const trial = trialResult.value.data;
+            const startDate = new Date(trial.start_date);
+            const threeDaysLater = new Date(startDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+            const now = new Date();
+            const remainingTime = threeDaysLater - now;
+            daysLeft = Math.max(0, Math.ceil(remainingTime / (24 * 60 * 60 * 1000)));
+
+            if (daysLeft > 0) {
+                statusText = `Trial Active`;
+                statusClass = 'trial';
+                accessStatus = 'trial';
+            } else {
+                statusText = 'Trial Expired';
+                statusClass = 'expired';
+                accessStatus = 'expired';
+            }
+        }
+
+        // Process analytics data
+        if (analyticsResult.status === 'fulfilled' && analyticsResult.value.data) {
+            calculateUserAnalytics(analyticsResult.value.data);
+        } else {
+            userAnalytics = {
+                totalTests: 0,
+                totalCorrect: 0,
+                totalQuestions: 0,
+                accuracy: 0,
+                completionRate: 0,
+                percentile: 0,
+                subjectStats: {},
+                recentTests: [],
+                improvementTrend: []
+            };
+        }
+
+        const finalProfileData = {
+            name: currentUser.name,
+            email: currentUser.email,
+            statusText,
+            statusClass,
+            daysLeft,
+            accessStatus,
+            userAnalytics,
+            testsData: { 
+                totalTests: userAnalytics.totalTests || 0, 
+                accuracy: userAnalytics.accuracy || 0 
+            }
+        };
+
+        // Cache the data
+        const timestamp = Date.now();
+        localStorage.setItem(cacheKey, JSON.stringify(finalProfileData));
+        localStorage.setItem(cacheTimestampKey, timestamp.toString());
+
+        // Update in-memory cache
+        profileDataCache = finalProfileData;
+        profileCacheTimestamp = timestamp;
+
+        console.log('Profile data loaded and cached successfully');
+
+        // Update UI
+        updateProfileElementsDirectly(finalProfileData);
+
+    } catch (error) {
+        console.error('Error loading profile:', error);
+
+        // Clear invalid cache
+        localStorage.removeItem(cacheKey);
+        localStorage.removeItem(cacheTimestampKey);
+        profileDataCache = null;
+        profileCacheTimestamp = null;
+
+        updateProfileElementsDirectly({
+            name: 'Error Loading Profile',
+            email: 'Please refresh the page',
+            statusText: 'Error Loading Status',
+            statusClass: 'error',
+            daysLeft: 0,
+            testsData: { totalTests: 0, accuracy: 0 }
+        });
+    }
+}
+
+// Function to invalidate profile cache (call this when user data changes)
+function invalidateProfileCache() {
+    if (currentUser) {
+        const cacheKey = `profile_data_${currentUser.id}`;
+        localStorage.removeItem(cacheKey);
+        localStorage.removeItem(`${cacheKey}_timestamp`);
+        profileDataCache = null;
+        profileCacheTimestamp = null;
+        console.log('Profile cache invalidated');
+    }
+}
+
+// Function to force refresh profile data
+async function refreshProfileData() {
+    console.log('Force refreshing profile data...');
+    await loadUserProfile(true);
+}
+
+function showFullProfileLoadingState() {
+    const profilePage = document.getElementById('profile-page');
+    if (profilePage) {
+        // Hide all existing content first
+        const existingContent = profilePage.innerHTML;
+        profilePage.setAttribute('data-original-content', existingContent);
+
+        // Create full screen loading state
+        profilePage.innerHTML = `
+            <div id="profileLoadingOverlay" style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: var(--bg-primary);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                border-radius: 16px;
+            ">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem; text-align: center;">
+                    <div style="width: 60px; height: 60px; border: 4px solid var(--light-gray); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div>
+                        <h3 style="color: var(--text-primary); margin: 0 0 0.5rem 0; font-size: 1.5rem;">Loading Your Profile</h3>
+                        <p style="color: var(--text-secondary); margin: 0; font-size: 1rem;">Fetching all data from database...</p>
+                        <div style="margin-top: 1rem;">
+                            <div style="width: 200px; height: 4px; background: var(--light-gray); border-radius: 2px; overflow: hidden;">
+                                <div style="width: 100%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary)); animation: loading-bar 2s ease-in-out infinite;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @keyframes loading-bar {
+                    0% { transform: translateX(-100%); }
+                    50% { transform: translateX(0%); }
+                    100% { transform: translateX(100%); }
+                }
+            </style>
+        `;
+
+        // Make profile page relative for overlay positioning
+        profilePage.style.position = 'relative';
+    }
+}
+
+function hideProfileLoadingState() {
+    const profilePage = document.getElementById('profile-page');
+    if (profilePage) {
+        const originalContent = profilePage.getAttribute('data-original-content');
+        if (originalContent) {
+            profilePage.innerHTML = originalContent;
+            profilePage.removeAttribute('data-original-content');
+        } else {
+            // Fallback: just remove the loading overlay
+            const loadingOverlay = document.getElementById('profileLoadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.remove();
+            }
+        }
+    }
+}
+
+function updateProfileElementsDirectly({ name, email, statusText, statusClass, daysLeft, testsData }) {
+    console.log('Updating profile elements with:', { name, email, statusText, statusClass, daysLeft, testsData });
+
+    // Update elements immediately without retries for faster loading
+    const updateElements = () => {
+        // Update profile name
+        const profileName = document.querySelector('#profileName');
+        if (profileName) {
+            profileName.textContent = name || 'User';
+        }
+
+        // Update profile email  
+        const profileEmail = document.querySelector('#profileEmail');
+        if (profileEmail) {
+            profileEmail.textContent = email || 'Loading email...';
+        }
+
+        // Update subscription status
+        const statusBadge = document.querySelector('#statusBadge');
+        if (statusBadge) {
+            statusBadge.textContent = statusText || 'Checking status...';
+            statusBadge.className = `status-badge ${statusClass || 'loading'}`;
+        }
+
+        // Update individual profile stat elements with immediate fallback values
+        const profileDaysLeft = document.getElementById('profileDaysLeft');
+        const profileTestsTaken = document.getElementById('profileTestsTaken');
+        const profileAvgScore = document.getElementById('profileAvgScore');
+
+        if (profileDaysLeft) {
+            profileDaysLeft.textContent = daysLeft !== undefined ? daysLeft : 
+                                         accessStatus === 'premium' ? '30' : 
+                                         accessStatus === 'trial' ? '3' : '0';
+        }
+        if (profileTestsTaken) {
+            profileTestsTaken.textContent = (testsData && testsData.totalTests !== undefined) ? testsData.totalTests : '0';
+        }
+        if (profileAvgScore) {
+            profileAvgScore.textContent = `${(testsData && testsData.accuracy !== undefined) ? testsData.accuracy : 0}%`;
+        }
+
+        // Update account information with immediate values
+        updateAccountInformation();
+
+        // Also update welcome message if on homepage
+        updateWelcomeMessage();
+
+        console.log('Profile elements updated successfully');
+    };
+
+    // Execute immediately
+    updateElements();
+
+    // Also try again after a short delay in case elements weren't ready
+    setTimeout(updateElements, 100);
+}
+
+// Profile functionality functions
+function toggleEditProfile() {
+    const editForm = document.getElementById('editProfileForm');
+    const editBtn = document.getElementById('editProfileBtn');
+
+    if (editForm.style.display === 'none' || !editForm.style.display) {
+        // Show edit form
+        editForm.style.display = 'block';
+        editBtn.style.display = 'none';
+
+        // Populate current values
+        document.getElementById('editName').value = currentUser?.name || '';
+        document.getElementById('editEmail').value = currentUser?.email || '';
+    } else {
+        // Hide edit form
+        editForm.style.display = 'none';
+        editBtn.style.display = 'block';
+    }
+}
+
+function cancelEdit() {
+    const editForm = document.getElementById('editProfileForm');
+    const editBtn = document.getElementById('editProfileBtn');
+
+    editForm.style.display = 'none';
+    editBtn.style.display = 'block';
+}
+
+async function saveProfile() {
+    const newName = document.getElementById('editName').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+
+    if (!newName || !newEmail) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    if (!isValidEmail(newEmail)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+
+    // Show loading state
+    const saveBtn = document.querySelector('#editProfileForm .btn-primary');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        const success = await updateUserProfile(newName, newEmail);
+
+        if (success) {
+            // Update UI immediately
+            document.getElementById('profileName').textContent = newName;
+            document.getElementById('profileEmail').textContent = newEmail;
+            updateWelcomeMessage();
+
+            // Hide edit form
+            cancelEdit();
+
+            // Invalidate cache to force refresh
+            invalidateProfileCache();
+
+            alert('Profile updated successfully!');
+        } else {
+            alert('Failed to update profile. Please try again.');
         }
     } catch (error) {
-        console.error('Error fetching subscription details:', error);
+        console.error('Error saving profile:', error);
+        alert('Error updating profile. Please try again.');
+    } finally {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
     }
+}
 
-    // Update subscription status display
-    if (subscriptionStatus) {
-        const statusBadge = subscriptionStatus.querySelector('.status-badge');
-        if (statusBadge) {
-            statusBadge.textContent = statusText;
-            statusBadge.className = `status-badge ${statusClass}`;
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function updateAccountInformation() {
+    // Update member since date
+    const memberSinceEl = document.getElementById('memberSince');
+    if (memberSinceEl) {
+        if (userSession?.user?.created_at) {
+            const createdDate = new Date(userSession.user.created_at);
+            memberSinceEl.textContent = createdDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        } else {
+            // Provide a reasonable fallback
+            memberSinceEl.textContent = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         }
     }
 
-    // Update profile stats with calculated days
-    const profileStats = document.querySelector('#profile-page .profile-stats');
-    if (profileStats) {
-        profileStats.innerHTML = `
-            <div class="stat-item">
-                <div class="stat-value">${daysLeft}</div>
-                <div class="stat-label">Days Left</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${userAnalytics.totalTests}</div>
-                <div class="stat-label">Tests Taken</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${userAnalytics.accuracy}%</div>
-                <div class="stat-label">Avg Score</div>
-            </div>
-        `;
+    // Update last login
+    const lastLoginEl = document.getElementById('lastLogin');
+    if (lastLoginEl) {
+        lastLoginEl.textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    // Calculate total study time based on test results
+    const totalStudyTimeEl = document.getElementById('totalStudyTime');
+    if (totalStudyTimeEl) {
+        if (userAnalytics?.totalTests && userAnalytics.totalTests > 0) {
+            // Estimate 3 hours per test
+            const estimatedHours = userAnalytics.totalTests * 3;
+            totalStudyTimeEl.textContent = `${estimatedHours} hours`;
+        } else {
+            totalStudyTimeEl.textContent = '0 hours';
+        }
     }
 }
 
@@ -1765,6 +2385,159 @@ function updateWelcomeMessage() {
         if (welcomeElement) {
             welcomeElement.textContent = currentUser.name + '!';
         }
+    }
+}
+
+// Enhanced navigation functions
+        function showPage(pageId, navItem) {
+            // Hide all pages with fade out animation
+            document.querySelectorAll('.page').forEach(page => {
+                if (page.classList.contains('active')) {
+                    page.classList.add('animate__animated', 'animate__fadeOut');
+                    setTimeout(() => {
+                        page.classList.remove('active', 'animate__animated', 'animate__fadeOut');
+                    }, 300);
+                }
+            });
+
+            // Show selected page with fade in animation
+            setTimeout(async () => {
+                const page = document.getElementById(pageId);
+                page.classList.add('active', 'animate__animated', 'animate__fadeIn');
+
+                // Update nav items
+                if (navItem) {
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    navItem.classList.add('active');
+                }
+
+                // Load page-specific data
+                if (pageId === 'analytics-page') {
+                    console.log('Loading analytics data for analytics page...');
+                    await loadUserAnalytics();
+                } else if (pageId === 'profile-page') {
+                    // Load profile data immediately when profile page is shown
+                    console.log('Profile page activated, loading data...');
+                    setTimeout(async () => {
+                        if (currentUser) {
+                            await loadUserProfile(true); // Force refresh profile data
+                        } else {
+                            console.log('No current user, initializing...');
+                            await initializeUser();
+                            if (currentUser) {
+                                await loadUserProfile(true);
+                            }
+                        }
+                    }, 100);
+                } else if (pageId === 'test-list-page') {
+                    // Check access and load all tests when navigating to test list page
+                    const hasAccess = await checkUserAccess();
+                    if (hasAccess) {
+                        document.getElementById('test-list-title').textContent = 'All Tests';
+                        await loadQuizzes(); // Load all quizzes without filter
+                    }
+                }
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }, 300);
+        }
+
+// Function to show test list filtered by stream
+async function showTestList(streamName) {
+    // Check access first
+    const hasAccess = await checkUserAccess();
+    if (!hasAccess) {
+        return;
+    }
+
+    // Show the test list page
+    document.getElementById('test-list-title').textContent = streamName;
+    showPage('test-list-page');
+
+    // Load quizzes for the specific stream
+    await loadQuizzes(streamName);
+}
+
+// Function to show all tests
+async function showAllTests() {
+    // Check access first
+    const hasAccess = await checkUserAccess();
+    if (!hasAccess) {
+        return;
+    }
+
+    // Show the test list page
+    document.getElementById('test-list-title').textContent = 'All Tests';
+    showPage('test-list-page');
+
+    // Load all quizzes without filter
+    await loadQuizzes();
+}
+
+async function showUserProfile() {
+    // Pre-fill with basic data immediately to avoid loading states
+    updateProfileElementsDirectly({
+        name: currentUser?.name || 'User',
+        email: currentUser?.email || 'Loading...',
+        statusText: accessStatus === 'premium' ? 'Premium Active' : 
+                   accessStatus === 'trial' ? 'Trial Active' : 
+                   accessStatus === 'expired' ? 'Access Expired' : 'Loading...',
+        statusClass: accessStatus || 'loading',
+        daysLeft: 0,
+        testsData: { totalTests: userAnalytics?.totalTests || 0, accuracy: userAnalytics?.accuracy || 0 }
+    });
+
+    // Show the profile page
+    showPage('profile-page', document.querySelector('.nav-item:last-child'));
+
+    // Load fresh data in background if needed
+    if (currentUser) {
+        if (profileDataCache && profileCacheTimestamp) {
+            const age = Date.now() - profileCacheTimestamp;
+            if (age < 10 * 60 * 1000) { // 10 minutes cache
+                console.log('Using cached profile data for profile page');
+                updateProfileElementsDirectly(profileDataCache);
+                return;
+            }
+        }
+
+        console.log('Loading fresh profile data...');
+        await loadUserProfile(true); // Force refresh
+    }
+}
+
+// Function to refresh analytics data
+async function refreshAnalyticsData() {
+    console.log('Refreshing analytics data...');
+
+    // Show loading state
+    const refreshBtn = document.querySelector('.btn-primary');
+    if (refreshBtn && refreshBtn.textContent.includes('Refresh')) {
+        const originalText = refreshBtn.textContent;
+        refreshBtn.textContent = 'Refreshing...';
+        refreshBtn.disabled = true;
+
+        try {
+            // Force refresh analytics data
+            await loadUserAnalytics();
+
+            // Force refresh profile data as well
+            await loadUserProfile(true);
+
+            console.log('Analytics data refreshed successfully');
+        } catch (error) {
+            console.error('Error refreshing analytics:', error);
+        } finally {
+            refreshBtn.textContent = originalText;
+            refreshBtn.disabled = false;
+        }
+    } else {
+        // If button not found, just refresh the data
+        await loadUserAnalytics();
+        await loadUserProfile(true);
     }
 }
 
@@ -1787,6 +2560,7 @@ window.retakeQuiz = retakeQuiz;
 window.goHome = goHome;
 window.initializeUser = initializeUser;
 window.loadQuizzes = loadQuizzes;
+window.showTestList = showTestList;
 window.setupSearch = setupSearch;
 window.setupSidebar = setupSidebar;
 window.checkGlobalAccess = checkGlobalAccess;
@@ -1797,6 +2571,7 @@ window.handlePaymentSuccess = handlePaymentSuccess;
 window.enforceGlobalAccess = enforceGlobalAccess;
 window.validateAccess = validateAccess;
 window.loadUserAnalytics = loadUserAnalytics;
+window.updateAnalyticsDisplay = updateAnalyticsDisplay;
 window.retryPaymentActivation = retryPaymentActivation;
 window.updateUserProfile = updateUserProfile;
 window.showLoginForm = showLoginForm;
@@ -1804,3 +2579,94 @@ window.showRegisterForm = showRegisterForm;
 window.logout = logout;
 window.loadUserProfile = loadUserProfile;
 window.updateWelcomeMessage = updateWelcomeMessage;
+window.showUserProfile = showUserProfile;
+window.showAllTests = showAllTests;
+window.showPage = showPage;
+window.invalidateProfileCache = invalidateProfileCache;
+window.clearAllCache = clearAllCache;
+window.toggleEditProfile = toggleEditProfile;
+window.cancelEdit = cancelEdit;
+window.saveProfile = saveProfile;
+window.refreshAnalyticsData = refreshAnalyticsData;
+
+// Function to show test list filtered by stream
+async function showTestList(streamName) {
+    // Check access first
+    const hasAccess = await checkUserAccess();
+    if (!hasAccess) {
+        return;
+    }
+
+    // Show the test list page
+    document.getElementById('test-list-title').textContent = streamName;
+    showPage('test-list-page');
+
+    // Load quizzes for the specific stream
+    await loadQuizzes(streamName);
+}
+
+// Function to show all tests
+async function showAllTests() {
+    // Check access first
+    const hasAccess = await checkUserAccess();
+    if (!hasAccess) {
+        return;
+    }
+
+    // Show the test list page
+    document.getElementById('test-list-title').textContent = 'All Tests';
+    showPage('test-list-page');
+
+    // Load all quizzes without filter
+    await loadQuizzes();
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+            // Check if we're on the quiz page
+            const isQuizPage = window.location.pathname.includes('quiz.html');
+
+            // Check access and load content
+            const hasAccess = await enforceGlobalAccess();
+            if (hasAccess) {
+                // Pre-populate profile elements with basic data immediately
+                if (!isQuizPage && currentUser) {
+                    // Set immediate fallback values to avoid "Loading..." states
+                    updateProfileElementsDirectly({
+                        name: currentUser.name || 'User',
+                        email: currentUser.email || 'Loading...',
+                        statusText: accessStatus === 'premium' ? 'Premium Active' : 
+                                   accessStatus === 'trial' ? 'Trial Active' : 
+                                   accessStatus === 'expired' ? 'Access Expired' : 'Checking...',
+                        statusClass: accessStatus || 'loading',
+                        daysLeft: accessStatus === 'premium' ? 30 : accessStatus === 'trial' ? 3 : 0,
+                        testsData: { 
+                            totalTests: userAnalytics?.totalTests || 0, 
+                            accuracy: userAnalytics?.accuracy || 0 
+                        },
+                        memberSince: userSession?.user?.created_at,
+                        totalStudyTime: userAnalytics?.totalTests ? userAnalytics.totalTests * 3 : 0
+                    });
+
+                    // Then load actual profile data in background
+                    console.log('Loading profile data on startup...');
+                    loadUserProfile().then(() => {
+                        updateWelcomeMessage();
+                    });
+                }
+
+                // Load homepage-specific content
+                if (!isQuizPage) {
+                    console.log('Loading analytics data for home page...');
+                    await loadUserAnalytics();
+                    console.log('Loading quizzes for homepage...');
+                    loadQuizzes();
+                    setupSearch();
+                }
+
+                // Set up profile image
+                const profileImg = document.querySelector('.profile-picture');
+                if (profileImg && !profileImg.src.includes('pic.png')) {
+                    profileImg.src = '/pic.png';
+                }
+            }
+        });
