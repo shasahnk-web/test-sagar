@@ -21,7 +21,7 @@
 
     <header>
         <div class="logo-container">
-            <div class="logo">TS</div>
+            <img src="logo.png" alt="Test Sagar Logo" class="logo-image"></img>
             <h1 class="app-title">Test Sagar - Admin Panel <span>Powered by TRMS</span></h1>
         </div>
         <div class="user-actions">
@@ -67,6 +67,19 @@
                         <label for="testDescription"><i class="material-icons">description</i> Test Description</label>
                         <textarea id="testDescription" placeholder="Enter test description"
                             class="form-textarea"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="testStream"><i class="material-icons">school</i> Test Stream/Grade</label>
+                        <select id="testStream" required class="form-input">
+                            <option value="">Select Stream/Grade</option>
+                            <option value="All">All (Show in all streams)</option>
+                            <option value="9th Grade">9th Grade</option>
+                            <option value="10th Grade">10th Grade</option>
+                            <option value="11th JEE/NEET">11th JEE/NEET</option>
+                            <option value="12th JEE/NEET">12th JEE/NEET</option>
+                            <option value="Dropper JEE/NEET">Dropper JEE/NEET</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -192,12 +205,13 @@
 
             const testName = document.getElementById('testName').value.trim();
             const testDescription = document.getElementById('testDescription').value.trim();
+            const testStream = document.getElementById('testStream').value;
             const fileInput = document.getElementById('dataFile');
             const statusDiv = document.getElementById('uploadStatus');
             const uploadBtn = document.querySelector('.upload-btn');
 
-            if (!testName || !fileInput.files[0]) {
-                alert('Please fill in all required fields');
+            if (!testName || !testStream || !fileInput.files[0]) {
+                alert('Please fill in all required fields including stream/grade');
                 return;
             }
 
@@ -208,8 +222,8 @@
                 statusDiv.innerHTML = '<div class="status-item processing"><i class="material-icons">hourglass_empty</i> Processing file...</div>';
 
                 // Initialize Supabase connection
-                const supabaseUrl = 'https://jxvkrjywedtkatfghigm.supabase.co';
-                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4dmtyanl3ZWR0a2F0ZmdoaWdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwNjkzMTYsImV4cCI6MjA2NzY0NTMxNn0.EkYJmw1LumYRvZlrCFyklAMZBxwAhRmyiDFJO0ahXQg';
+                const supabaseUrl = 'https://gaqyuylvawgoxuaevhsi.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhcXl1eWx2YXdnb3h1YWV2aHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MDExNTQsImV4cCI6MjA2Nzk3NzE1NH0.tRJXi5vTSopCza_61sYu2ccOrk8LR7UvJ07JPP07OEI';
                 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
                 // Test database connection
@@ -272,7 +286,8 @@
                     .from('tests')
                     .insert({
                         name: testName,
-                        description: testDescription
+                        description: testDescription,
+                        stream: testStream
                     })
                     .select()
                     .single();
@@ -327,6 +342,7 @@
                 // Reset form
                 document.getElementById('testName').value = '';
                 document.getElementById('testDescription').value = '';
+                document.getElementById('testStream').value = '';
                 document.getElementById('dataFile').value = '';
                 const uploadArea = document.querySelector('.file-upload-area');
                 uploadArea.classList.remove('has-file');
