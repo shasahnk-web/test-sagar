@@ -18,7 +18,7 @@
 
         <header>
             <div class="logo-container">
-                <div class="logo">TS</div>
+                <img src="logo.png" alt="Test Sagar Logo" class="logo-image"></img>
                 <h1 class="app-title">Test Sagar <span>Powered by TRMS</span></h1>
             </div>
             <div class="user-actions">
@@ -87,14 +87,14 @@
 
                 <h2 class="section-title animate__animated animate__fadeIn animate__delay-2s">
                     <i class="material-icons">assignment</i>
-                    Test Types
+                    Browse Tests
                 </h2>
                 <div class="test-types">
-                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;" onclick="showTestList('Short Practice')">
-                        <i class="material-icons">timer</i>
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;" onclick="showAllTests()">
+                        <i class="material-icons">quiz</i>
                         <div class="test-type-info">
-                            <h3>Short Practice</h3>
-                            <p>Quick 15-20 min tests for focused learning</p>
+                            <h3>All Tests</h3>
+                            <p>Browse all available tests across all streams</p>
                         </div>
                     </div>
                     <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.7s;" onclick="showTestList('Practice Tests')">
@@ -114,8 +114,8 @@
                     <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.9s;" onclick="showTestList('PYQs')">
                         <i class="material-icons">history_edu</i>
                         <div class="test-type-info">
-                            <h3>PYQs</h3>
-                            <p>Previous year questions with solutions</p>
+                            <h3>Previous Year Questions</h3>
+                            <p>Practice with actual exam questions</p>
                         </div>
                     </div>
                 </div>
@@ -125,23 +125,18 @@
                     Your Performance
                 </h2>
                 <div class="performance-card animate__animated animate__fadeIn" style="animation-delay: 1s;">
-                    <p>Track your progress and improvement over time with detailed analytics</p>
                     <div class="performance-stats" id="performanceStats">
                         <div class="stat-item">
-                            <div class="stat-value">87%</div>
+                            <div class="stat-value">0%</div>
                             <div class="stat-label">Accuracy</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">24</div>
+                            <div class="stat-value">0</div>
                             <div class="stat-label">Tests Taken</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">92%</div>
+                            <div class="stat-value">0%</div>
                             <div class="stat-label">Completion</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">96<small>th</small></div>
-                            <div class="stat-label">Percentile</div>
                         </div>
                     </div>
                 </div>
@@ -185,10 +180,16 @@
 
             <!-- Analytics Page -->
             <div class="page" id="analytics-page">
-                <h2 class="section-title">
-                    <i class="material-icons">analytics</i>
-                    Your <span class="neon-text">Analytics</span>
-                </h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 class="section-title">
+                        <i class="material-icons">analytics</i>
+                        Your <span class="neon-text">Analytics</span>
+                    </h2>
+                    <button class="btn btn-primary" onclick="refreshAnalyticsData()">
+                        <i class="material-icons">refresh</i>
+                        Refresh Data
+                    </button>
+                </div>
                 <div class="analytics-grid">
                     <div class="performance-card">
                         <h3><i class="material-icons">trending_up</i> Overall Performance</h3>
@@ -204,10 +205,6 @@
                             <div class="stat-item">
                                 <div class="stat-value">92%</div>
                                 <div class="stat-label">Completion</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">96<small>th</small></div>
-                                <div class="stat-label">Percentile</div>
                             </div>
                         </div>
                     </div>
@@ -261,39 +258,86 @@
                 <div class="profile-container">
                     <div class="performance-card profile-card">
                         <div class="profile-header">
-                            <div class="profile-avatar">
-                                <i class="material-icons">person</i>
-                            </div>
-                            <div class="profile-info">
+                        <div class="profile-avatar">
+                            <img src="pic.png" alt="Profile Picture" class="profile-picture">
+                        </div>
+                        <div class="profile-info">
                             <h3 id="profileName">Loading...</h3>
-                            <p id="profileEmail">Loading...</p>
+                            <p class="email" id="profileEmail">Loading...</p>
                             <div class="subscription-status" id="subscriptionStatus">
-                                <span class="status-badge expired">Loading...</span>
+                                <span class="status-badge" id="statusBadge">Loading...</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileDaysLeft">Loading...</div>
+                            <div class="stat-label">Days Left</div>
                         </div>
-                        <div class="profile-stats">
-                            <div class="stat-item">
-                                <div class="stat-value">3</div>
-                                <div class="stat-label">Days Left</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">24</div>
-                                <div class="stat-label">Tests Taken</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">87%</div>
-                                <div class="stat-label">Avg Score</div>
-                            </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileTestsTaken">Loading...</div>
+                            <div class="stat-label">Tests Taken</div>
                         </div>
-                        <div class="profile-actions">
-                            <button class="btn btn-primary" onclick="showPremiumModal()">
-                                <i class="material-icons">star</i> Upgrade to Premium
+                        <div class="stat-item">
+                            <div class="stat-value" id="profileAvgScore">Loading...</div>
+                            <div class="stat-label">Avg Score</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-sections">
+                        <div class="profile-section">
+                            <h4><i class="material-icons">edit</i>Edit Profile</h4>
+                            <button class="btn btn-primary" id="editProfileBtn" onclick="toggleEditProfile()">
+                                <i class="material-icons">edit</i> Edit Profile
                             </button>
-                            <button class="btn btn-secondary" onclick="logout()" style="margin-top: 0.5rem;">
-                                <i class="material-icons">logout</i> Logout
-                            </button>
+                            <div id="editProfileForm" style="display: none;">
+                                <div class="form-group">
+                                    <label for="editName">Name</label>
+                                    <input type="text" id="editName" class="form-input" placeholder="Enter your name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="editEmail">Email</label>
+                                    <input type="email" id="editEmail" class="form-input" placeholder="Enter your email">
+                                </div>
+                                <div class="form-actions">
+                                    <button class="btn btn-primary" onclick="saveProfile()">
+                                        <i class="material-icons">save</i> Save Changes
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="cancelEdit()">
+                                        <i class="material-icons">cancel</i> Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="profile-section">
+                            <h4><i class="material-icons">info</i>Account Information</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Member Since</span>
+                                    <span class="info-value" id="memberSince">Loading...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Last Login</span>
+                                    <span class="info-value" id="lastLogin">Loading...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Total Time Studied</span>
+                                    <span class="info-value" id="totalStudyTime">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions" id="profileActions">
+                        <button class="btn btn-primary" id="upgradeBtn" onclick="showPremiumModal()" style="display: none;">
+                            <i class="material-icons">star</i> Upgrade to Premium
+                        </button>
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i class="material-icons">logout</i> Logout
+                        </button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -457,10 +501,7 @@
             }, 300);
         }
 
-        function showTestList(title) {
-            document.getElementById('test-list-title').textContent = title;
-            showPage('test-list-page');
-        }
+
 
         function goBack() {
             showPage('home-page', document.querySelector('.nav-item:first-child'));
