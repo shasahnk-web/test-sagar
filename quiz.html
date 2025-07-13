@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz - Test Sagar</title>
+    <title>Quiz Results - Test Sagar</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
@@ -15,247 +16,359 @@
     <div class="bg-circle circle-1"></div>
     <div class="bg-circle circle-2"></div>
 
-    <div class="quiz-container">
-        <!-- Professional Header -->
-        <header class="quiz-header">
-            <div class="quiz-nav">
-                <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Open navigation menu">
-                    <img src="/h.svg" alt="Menu" />
-                </button>
-                <div class="logo-container">
-                    <img src="logo.png" alt="Test Sagar Logo" class="logo-image">
-                    <div class="header-title">
-                        <h1>Test Sagar</h1>
-                        <span>Professional Test Portal</span>
+    <!-- Professional Header -->
+    <header class="result-header-bar">
+        <div class="logo-container">
+            <img src="logo.png" alt="Test Sagar" class="logo-image">
+            <div class="header-title">
+                <h1 class="app-title">Test Sagar</h1>
+                <span class="header-subtitle">Professional Test Results</span>
+            </div>
+        </div>
+        <div class="user-actions">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="material-icons">dark_mode</i>
+            </button>
+            <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                <i class="material-icons">home</i>
+                Dashboard
+            </button>
+        </div>
+    </header>
+
+    <!-- Enhanced Results Container -->
+    <main class="enhanced-result-container">
+        <div class="result-loading animate__animated animate__pulse">
+            <div class="loading-animation">
+                <div class="loading-spinner-large"></div>
+                <div class="loading-progress">
+                    <div class="progress-bar">
+                        <div class="progress animated-progress"></div>
                     </div>
                 </div>
             </div>
-            <div class="quiz-controls">
-                <div class="timer-container">
-                    <div class="timer">
-                        <i class="material-icons">schedule</i>
-                        <span class="timer-text">00:00:00</span>
+            <div class="loading-text">
+                <h2>Calculating Your Results</h2>
+                <p>Analyzing your performance across all subjects...</p>
+                <div class="loading-steps">
+                    <div class="step active">
+                        <i class="material-icons">assignment</i>
+                        <span>Processing answers</span>
                     </div>
-                </div>
-                <div class="control-buttons">
-                    <button class="btn btn-outline home-btn" onclick="window.location.href='index.html'">
-                        <i class="material-icons">home</i>
-                        <span>Home</span>
-                    </button>
-                    <button class="btn btn-warning submit-btn" onclick="submitQuiz()">
-                        <i class="material-icons">send</i>
-                        <span>Submit</span>
-                    </button>
+                    <div class="step">
+                        <i class="material-icons">analytics</i>
+                        <span>Calculating scores</span>
+                    </div>
+                    <div class="step">
+                        <i class="material-icons">assessment</i>
+                        <span>Generating report</span>
+                    </div>
                 </div>
             </div>
-        </header>
-
-        <div class="quiz-body">
-            <!-- Enhanced Sidebar Navigation -->
-            <nav class="question-nav" id="questionNav">
-                <div class="nav-header">
-                    <div class="nav-title">
-                        <h3><i class="material-icons">quiz</i> Question Navigation</h3>
-                    </div>
-                    <button class="nav-close" id="navCloseBtn">
-                        <i class="material-icons">close</i>
-                    </button>
-                </div>
-
-                <div class="nav-content">
-                    <div class="quiz-progress">
-                        <div class="progress-stats">
-                            <div class="stat">
-                                <span class="stat-value" id="answeredCount">0</span>
-                                <span class="stat-label">Answered</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-value" id="remainingCount">0</span>
-                                <span class="stat-label">Remaining</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-value" id="markedCount">0</span>
-                                <span class="stat-label">Marked</span>
-                            </div>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar">
-                                <div class="progress" id="overallProgress"></div>
-                            </div>
-                            <span class="progress-text" id="progressText">0% Complete</span>
-                        </div>
-                    </div>
-
-                    <div class="subjects-container">
-                        <!-- Subject sections will be populated by JavaScript -->
-                    </div>
-
-                    <div class="legend">
-                        <h4>Legend</h4>
-                        <div class="legend-items">
-                            <div class="legend-item">
-                                <div class="legend-color current"></div>
-                                <span>Current</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color answered"></div>
-                                <span>Answered</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color marked"></div>
-                                <span>Marked</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color skipped"></div>
-                                <span>Skipped</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- Enhanced Question Content Area -->
-            <main class="question-content">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading question...</p>
-                </div>
-            </main>
         </div>
 
-        <!-- Sidebar Overlay for Mobile -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    </div>
+        <!-- Results will be populated by JavaScript -->
+        <div class="results-content" style="display: none;">
+            <!-- Content will be dynamically inserted here -->
+        </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
+            // Setup theme toggle
+            setupResultThemeToggle();
+
+            // Animate loading steps
+            animateLoadingSteps();
+
             const hasAccess = await enforceGlobalAccess();
             if (hasAccess) {
-                await loadQuizData();
-                setupEnhancedQuizHeader();
+                // Show loading animation for better UX
+                setTimeout(() => {
+                    loadEnhancedResults();
+                }, 2000);
             }
         });
 
-        function setupEnhancedQuizHeader() {
-            const hamburger = document.getElementById('hamburgerBtn');
-            const questionNav = document.getElementById('questionNav');
-            const navClose = document.getElementById('navCloseBtn');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
+        function setupResultThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
 
-            if (!hamburger || !questionNav || !navClose || !sidebarOverlay) {
-                console.error('Quiz navigation elements not found');
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+
+                if (body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    themeToggle.innerHTML = '<i class="material-icons">dark_mode</i>';
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
+        function animateLoadingSteps() {
+            const steps = document.querySelectorAll('.loading-steps .step');
+            let currentStep = 0;
+
+            const animateStep = () => {
+                if (currentStep < steps.length) {
+                    steps[currentStep].classList.add('active');
+                    if (currentStep > 0) {
+                        steps[currentStep - 1].classList.add('completed');
+                    }
+                    currentStep++;
+                    setTimeout(animateStep, 800);
+                }
+            };
+
+            setTimeout(animateStep, 500);
+        }
+
+        function loadEnhancedResults() {
+            const resultsData = localStorage.getItem('quiz_results');
+            if (!resultsData) {
+                alert('No quiz results found.');
+                window.location.href = 'index.html';
                 return;
             }
 
-            // Toggle sidebar
-            const openSidebar = () => {
-                questionNav.classList.add('open');
-                sidebarOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-
-                // Focus management for accessibility
-                navClose.focus();
-
-                // Trap focus within the sidebar
-                trapFocus(questionNav);
-            };
-
-            // Close sidebar
-            const closeSidebar = () => {
-                questionNav.classList.remove('open');
-                sidebarOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-
-                // Return focus to hamburger button
-                hamburger.focus();
-
-                // Remove focus trap
-                removeFocusTrap();
-            };
-
-            // Event listeners
-            hamburger.addEventListener('click', openSidebar);
-            navClose.addEventListener('click', closeSidebar);
-            sidebarOverlay.addEventListener('click', closeSidebar);
-
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && questionNav.classList.contains('open')) {
-                    closeSidebar();
-                }
-            });
-
-            // Touch gestures for mobile
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            document.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-            });
-
-            document.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-
-            function handleSwipe() {
-                const swipeThreshold = 50;
-                const swipeDistance = touchEndX - touchStartX;
-
-                // Swipe right to open sidebar (when closed)
-                if (swipeDistance > swipeThreshold && !questionNav.classList.contains('open') && touchStartX < 50) {
-                    openSidebar();
-                }
-
-                // Swipe left to close sidebar (when open)
-                if (swipeDistance < -swipeThreshold && questionNav.classList.contains('open')) {
-                    closeSidebar();
-                }
-            }
-
-            // Focus trap implementation
-            let focusableElements = [];
-            let firstFocusableElement = null;
-            let lastFocusableElement = null;
-
-            function trapFocus(element) {
-                focusableElements = element.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
-                firstFocusableElement = focusableElements[0];
-                lastFocusableElement = focusableElements[focusableElements.length - 1];
-
-                element.addEventListener('keydown', handleFocusTrap);
-            }
-
-            function handleFocusTrap(e) {
-                if (e.key === 'Tab') {
-                    if (e.shiftKey) {
-                        if (document.activeElement === firstFocusableElement) {
-                            lastFocusableElement.focus();
-                            e.preventDefault();
-                        }
-                    } else {
-                        if (document.activeElement === lastFocusableElement) {
-                            firstFocusableElement.focus();
-                            e.preventDefault();
-                        }
-                    }
-                }
-            }
-
-            function removeFocusTrap() {
-                if (questionNav) {
-                    questionNav.removeEventListener('keydown', handleFocusTrap);
-                }
-            }
+            const data = JSON.parse(resultsData);
+            displayEnhancedResults(data);
         }
 
-        // Enhanced navigation functions
-        window.setupQuizHeader = setupEnhancedQuizHeader;
-        </script>
+        function displayEnhancedResults(data) {
+            const { quiz, results, completedAt } = data;
+            const loadingDiv = document.querySelector('.result-loading');
+            const resultsContent = document.querySelector('.results-content');
+
+            document.title = `${quiz.name} - Results - Test Sagar`;
+
+            // Hide loading and show results
+            loadingDiv.style.display = 'none';
+            resultsContent.style.display = 'block';
+
+            resultsContent.innerHTML = `
+                <div class="result-hero">
+                    <div class="result-badge">
+                        <div class="badge-icon">
+                            ${results.percentage >= 80 ? '🏆' : results.percentage >= 60 ? '🎯' : '📚'}
+                        </div>
+                        <div class="badge-text">
+                            ${results.percentage >= 80 ? 'Excellent!' : results.percentage >= 60 ? 'Good Job!' : 'Keep Learning!'}
+                        </div>
+                    </div>
+
+                    <div class="result-title">
+                        <h1>${quiz.name}</h1>
+                        <p class="completion-time">Completed on ${new Date(completedAt).toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</p>
+                    </div>
+                </div>
+
+                <div class="score-dashboard">
+                    <div class="main-score-card">
+                        <div class="score-circle-container">
+                            <div class="score-circle" data-percentage="${results.percentage}">
+                                <div class="score-value">${results.percentage}%</div>
+                                <div class="score-label">Overall Score</div>
+                            </div>
+                        </div>
+                        <div class="performance-grade">
+                            <div class="grade-letter">${getGradeLetter(results.percentage)}</div>
+                            <div class="grade-description">${getGradeDescription(results.percentage)}</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card correct">
+                            <div class="stat-icon">
+                                <i class="material-icons">check_circle</i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${results.correct}</div>
+                                <div class="stat-label">Correct Answers</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card incorrect">
+                            <div class="stat-icon">
+                                <i class="material-icons">cancel</i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${results.incorrect}</div>
+                                <div class="stat-label">Incorrect Answers</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card skipped">
+                            <div class="stat-icon">
+                                <i class="material-icons">remove_circle</i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${results.skipped}</div>
+                                <div class="stat-label">Skipped Questions</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card total">
+                            <div class="stat-icon">
+                                <i class="material-icons">quiz</i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-number">${results.total}</div>
+                                <div class="stat-label">Total Questions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-dashboard">
+                    <div class="section-header">
+                        <h2><i class="material-icons">analytics</i> Subject-wise Performance Analysis</h2>
+                    </div>
+
+                    <div class="subject-analysis-grid">
+                        ${Object.entries(results.subjectStats).map(([subject, stats]) => {
+                            const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+                            const color = getSubjectColor(subject);
+                            return `
+                                <div class="subject-card enhanced" style="border-left: 4px solid ${color};">
+                                    <div class="subject-header">
+                                        <div class="subject-info">
+                                            <h3>${subject}</h3>
+                                            <p>${stats.total} questions</p>
+                                        </div>
+                                        <div class="subject-score">
+                                            <span class="percentage">${percentage}%</span>
+                                            <div class="performance-indicator ${getPerformanceClass(percentage)}">
+                                                ${getPerformanceIcon(percentage)}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="subject-progress-container">
+                                        <div class="progress-bar enhanced">
+                                            <div class="progress" style="width: ${percentage}%; background: linear-gradient(90deg, ${color}, ${color}aa);"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="subject-breakdown">
+                                        <div class="breakdown-item correct">
+                                            <i class="material-icons">check</i>
+                                            <span>${stats.correct} Correct</span>
+                                        </div>
+                                        <div class="breakdown-item incorrect">
+                                            <i class="material-icons">close</i>
+                                            <span>${stats.incorrect} Wrong</span>
+                                        </div>
+                                        <div class="breakdown-item skipped">
+                                            <i class="material-icons">remove</i>
+                                            <span>${stats.skipped} Skipped</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div class="action-dashboard">
+                    <div class="action-card primary">
+                        <button class="btn btn-primary enhanced" onclick="reviewAnswers()">
+                            <i class="material-icons">visibility</i>
+                            <span>Review Your Answers</span>
+                        </button>
+                    </div>
+
+                    <div class="action-card secondary">
+                        <button class="btn btn-secondary enhanced" onclick="retakeQuiz()">
+                            <i class="material-icons">refresh</i>
+                            <span>Retake This Quiz</span>
+                        </button>
+                    </div>
+
+                    <div class="action-card outline">
+                        <button class="btn btn-outline enhanced" onclick="goHome()">
+                            <i class="material-icons">dashboard</i>
+                            <span>Back to Dashboard</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Animate score circle
+            setTimeout(() => {
+                animateScoreCircle(results.percentage);
+            }, 500);
+        }
+
+        function getGradeLetter(percentage) {
+            if (percentage >= 90) return 'A+';
+            if (percentage >= 80) return 'A';
+            if (percentage >= 70) return 'B';
+            if (percentage >= 60) return 'C';
+            if (percentage >= 50) return 'D';
+            return 'F';
+        }
+
+        function getGradeDescription(percentage) {
+            if (percentage >= 90) return 'Outstanding Performance';
+            if (percentage >= 80) return 'Excellent Work';
+            if (percentage >= 70) return 'Good Performance';
+            if (percentage >= 60) return 'Satisfactory';
+            if (percentage >= 50) return 'Needs Improvement';
+            return 'Requires More Practice';
+        }
+
+        function getSubjectColor(subject) {
+            const colors = {
+                'Physics': '#6366F1',
+                'Chemistry': '#10B981',
+                'Maths': '#F59E0B',
+                'Mathematics': '#F59E0B'
+            };
+            return colors[subject] || '#8B5CF6';
+        }
+
+        function getPerformanceClass(percentage) {
+            if (percentage >= 80) return 'excellent';
+            if (percentage >= 60) return 'good';
+            if (percentage >= 40) return 'average';
+            return 'poor';
+        }
+
+        function getPerformanceIcon(percentage) {
+            if (percentage >= 80) return '🏆';
+            if (percentage >= 60) return '👍';
+            if (percentage >= 40) return '👌';
+            return '📚';
+        }
+
+        function animateScoreCircle(percentage) {
+            const circle = document.querySelector('.score-circle');
+            if (circle) {
+                circle.style.background = `conic-gradient(var(--primary) ${percentage * 3.6}deg, var(--light-gray) 0deg)`;
+                circle.classList.add('animate');
+            }
+        }
+    </script>
 </body>
 </html>
