@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,44 +16,105 @@
     <div class="bg-circle circle-2"></div>
 
     <div class="quiz-container">
+        <!-- Professional Header -->
         <header class="quiz-header">
             <div class="quiz-nav">
-                <button class="hamburger" onclick="document.querySelector('.question-nav').classList.toggle('open')">
-                    <i class="material-icons">menu</i>
+                <button class="hamburger" id="hamburgerBtn" type="button" aria-label="Open navigation menu">
+                    <img src="/h.svg" alt="Menu" />
                 </button>
                 <div class="logo-container">
-                    <div class="logo">TS</div>
+                    <img src="logo.png" alt="Test Sagar Logo" class="logo-image">
                     <div class="header-title">
                         <h1>Test Sagar</h1>
-                        <span>Powered by TRMS</span>
+                        <span>Professional Test Portal</span>
                     </div>
                 </div>
             </div>
             <div class="quiz-controls">
-                <div class="timer">
-                    <i class="material-icons">timer</i>
-                    <span>00:00:00</span>
+                <div class="timer-container">
+                    <div class="timer">
+                        <i class="material-icons">schedule</i>
+                        <span class="timer-text">00:00:00</span>
+                    </div>
                 </div>
-                <button class="btn btn-outline" onclick="window.location.href='index.html'">
-                    <i class="material-icons">home</i> Home
-                </button>
-                <button class="btn btn-warning" onclick="submitQuiz()">
-                    <i class="material-icons">send</i> Submit
-                </button>
+                <div class="control-buttons">
+                    <button class="btn btn-outline home-btn" onclick="window.location.href='index.html'">
+                        <i class="material-icons">home</i>
+                        <span>Home</span>
+                    </button>
+                    <button class="btn btn-warning submit-btn" onclick="submitQuiz()">
+                        <i class="material-icons">send</i>
+                        <span>Submit</span>
+                    </button>
+                </div>
             </div>
         </header>
 
         <div class="quiz-body">
-            <nav class="question-nav">
+            <!-- Enhanced Sidebar Navigation -->
+            <nav class="question-nav" id="questionNav">
                 <div class="nav-header">
-                    <h3>Questions</h3>
-                    <button class="nav-close" onclick="document.querySelector('.question-nav').classList.remove('open')">
+                    <div class="nav-title">
+                        <h3><i class="material-icons">quiz</i> Question Navigation</h3>
+                    </div>
+                    <button class="nav-close" id="navCloseBtn">
                         <i class="material-icons">close</i>
                     </button>
                 </div>
-                <!-- Navigation will be populated by JavaScript -->
+
+                <div class="nav-content">
+                    <div class="quiz-progress">
+                        <div class="progress-stats">
+                            <div class="stat">
+                                <span class="stat-value" id="answeredCount">0</span>
+                                <span class="stat-label">Answered</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="remainingCount">0</span>
+                                <span class="stat-label">Remaining</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value" id="markedCount">0</span>
+                                <span class="stat-label">Marked</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress" id="overallProgress"></div>
+                            </div>
+                            <span class="progress-text" id="progressText">0% Complete</span>
+                        </div>
+                    </div>
+
+                    <div class="subjects-container">
+                        <!-- Subject sections will be populated by JavaScript -->
+                    </div>
+
+                    <div class="legend">
+                        <h4>Legend</h4>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="legend-color current"></div>
+                                <span>Current</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color answered"></div>
+                                <span>Answered</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color marked"></div>
+                                <span>Marked</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color skipped"></div>
+                                <span>Skipped</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </nav>
 
+            <!-- Enhanced Question Content Area -->
             <main class="question-content">
                 <div class="loading">
                     <div class="loading-spinner"></div>
@@ -62,6 +122,9 @@
                 </div>
             </main>
         </div>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -72,9 +135,127 @@
             const hasAccess = await enforceGlobalAccess();
             if (hasAccess) {
                 await loadQuizData();
-                setupQuizHeader();
+                setupEnhancedQuizHeader();
             }
         });
-    </script>
+
+        function setupEnhancedQuizHeader() {
+            const hamburger = document.getElementById('hamburgerBtn');
+            const questionNav = document.getElementById('questionNav');
+            const navClose = document.getElementById('navCloseBtn');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (!hamburger || !questionNav || !navClose || !sidebarOverlay) {
+                console.error('Quiz navigation elements not found');
+                return;
+            }
+
+            // Toggle sidebar
+            const openSidebar = () => {
+                questionNav.classList.add('open');
+                sidebarOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+
+                // Focus management for accessibility
+                navClose.focus();
+
+                // Trap focus within the sidebar
+                trapFocus(questionNav);
+            };
+
+            // Close sidebar
+            const closeSidebar = () => {
+                questionNav.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+
+                // Return focus to hamburger button
+                hamburger.focus();
+
+                // Remove focus trap
+                removeFocusTrap();
+            };
+
+            // Event listeners
+            hamburger.addEventListener('click', openSidebar);
+            navClose.addEventListener('click', closeSidebar);
+            sidebarOverlay.addEventListener('click', closeSidebar);
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && questionNav.classList.contains('open')) {
+                    closeSidebar();
+                }
+            });
+
+            // Touch gestures for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const swipeDistance = touchEndX - touchStartX;
+
+                // Swipe right to open sidebar (when closed)
+                if (swipeDistance > swipeThreshold && !questionNav.classList.contains('open') && touchStartX < 50) {
+                    openSidebar();
+                }
+
+                // Swipe left to close sidebar (when open)
+                if (swipeDistance < -swipeThreshold && questionNav.classList.contains('open')) {
+                    closeSidebar();
+                }
+            }
+
+            // Focus trap implementation
+            let focusableElements = [];
+            let firstFocusableElement = null;
+            let lastFocusableElement = null;
+
+            function trapFocus(element) {
+                focusableElements = element.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                firstFocusableElement = focusableElements[0];
+                lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+                element.addEventListener('keydown', handleFocusTrap);
+            }
+
+            function handleFocusTrap(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstFocusableElement) {
+                            lastFocusableElement.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === lastFocusableElement) {
+                            firstFocusableElement.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            }
+
+            function removeFocusTrap() {
+                if (questionNav) {
+                    questionNav.removeEventListener('keydown', handleFocusTrap);
+                }
+            }
+        }
+
+        // Enhanced navigation functions
+        window.setupQuizHeader = setupEnhancedQuizHeader;
+        </script>
 </body>
 </html>
