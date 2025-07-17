@@ -707,7 +707,7 @@ function calculateUserAnalytics(results) {
     userAnalytics.totalTests = results.length;
     userAnalytics.totalCorrect = results.reduce((sum, result) => sum + (result.correct || 0), 0);
     userAnalytics.totalQuestions = results.reduce((sum, result) => sum + (result.total || 0), 0);
-    userAnalytics.accuracy = userAnalytics.totalQuestions > 0 ? 
+    userAnalytics.accuracy = userAnalytics.totalQuestions > 0 ?
         Math.round((userAnalytics.totalCorrect / userAnalytics.totalQuestions) * 100) : 0;
 
     // Calculate completion rate based on tests taken vs expected frequency
@@ -730,7 +730,7 @@ function calculateUserAnalytics(results) {
     results.forEach(result => {
         if (result.subject_stats) {
             try {
-                const subjects = typeof result.subject_stats === 'string' ? 
+                const subjects = typeof result.subject_stats === 'string' ?
                     JSON.parse(result.subject_stats) : result.subject_stats;
 
                 Object.keys(subjects).forEach(subject => {
@@ -1032,7 +1032,7 @@ function setupSearch() {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredQuizzes = quizzes.filter(quiz => 
+            const filteredQuizzes = quizzes.filter(quiz =>
                 quiz.name.toLowerCase().includes(searchTerm) ||
                 (quiz.description && quiz.description.toLowerCase().includes(searchTerm)) ||
                 (quiz.stream && quiz.stream.toLowerCase().includes(searchTerm))
@@ -1155,9 +1155,9 @@ function setupQuizNavigation() {
                 </div>
                 <div class="question-numbers">
                     ${subjectQuestions.map((q, index) => {
-                        const globalIndex = questions.findIndex(question => question.id === q.id);
-                        return `<button class="question-btn" data-question="${globalIndex}" onclick="goToQuestion(${globalIndex})">${globalIndex + 1}</button>`;
-                    }).join('')}
+            const globalIndex = questions.findIndex(question => question.id === q.id);
+            return `<button class="question-btn" data-question="${globalIndex}" onclick="goToQuestion(${globalIndex})">${globalIndex + 1}</button>`;
+        }).join('')}
                 </div>
             </div>
         `;
@@ -1223,15 +1223,17 @@ function setupQuizHeader() {
             questionNav.classList.toggle('open');
         });
 
-            // Touch gestures for mobile
+        // Enhanced touch gestures for mobile
             let touchStartX = 0;
             let touchEndX = 0;
             let touchStartY = 0;
             let touchEndY = 0;
+            let touchStartTime = 0;
 
             document.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
                 touchStartY = e.changedTouches[0].screenY;
+                touchStartTime = Date.now();
             }, { passive: true });
 
             document.addEventListener('touchend', (e) => {
@@ -1241,20 +1243,23 @@ function setupQuizHeader() {
             }, { passive: true });
 
             function handleSwipe() {
-                const swipeThreshold = 50;
+                const swipeThreshold = 60;
                 const swipeDistance = touchEndX - touchStartX;
                 const verticalDistance = Math.abs(touchEndY - touchStartY);
+                const touchDuration = Date.now() - touchStartTime;
 
-                // Only handle horizontal swipes (ignore if too much vertical movement)
-                if (verticalDistance > swipeThreshold) return;
+                // Only handle horizontal swipes that are fast enough and not too vertical
+                if (verticalDistance > swipeThreshold || touchDuration > 300) return;
 
                 // Swipe right to open sidebar (when closed)
-                if (swipeDistance > swipeThreshold && !questionNav.classList.contains('open') && touchStartX < 50) {
+                if (swipeDistance > swipeThreshold && !questionNav.classList.contains('open') && touchStartX < 80) {
+                    e.preventDefault();
                     openSidebar();
                 }
 
                 // Swipe left to close sidebar (when open)
                 if (swipeDistance < -swipeThreshold && questionNav.classList.contains('open')) {
+                    e.preventDefault();
                     closeSidebar();
                 }
             }
@@ -1478,7 +1483,7 @@ function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
         if (e.target.type === 'number' || e.target.type === 'text') return;
 
-        switch(e.key) {
+        switch (e.key) {
             case 'ArrowLeft':
                 if (currentQuestionIndex > 0) {
                     displayQuestion(currentQuestionIndex - 1);
@@ -1668,8 +1673,8 @@ function displayResults(data) {
                 <h3><i class="material-icons">analytics</i> Subject-wise Analysis</h3>
                 <div class="subject-analysis">
                     ${Object.entries(results.subjectStats).map(([subject, stats]) => {
-                        const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
-                        return `
+            const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+            return `
                             <div class="subject-card">
                                 <div class="subject-header">
                                     <h4>${subject}</h4>
@@ -1688,7 +1693,7 @@ function displayResults(data) {
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>
 
@@ -1708,7 +1713,14 @@ function displayResults(data) {
 }
 
 function reviewAnswers() {
-    alert('Review functionality will be implemented in the next version.');
+    // Check if quiz results exist
+    const resultsData = localStorage.getItem('quiz_results');
+    if (resultsData) {
+        window.location.href = 'review.html';
+    } else {
+        alert('No quiz results found. Please take a quiz first.');
+        window.location.href = 'index.html';
+    }
 }
 
 function retakeQuiz() {
@@ -2067,9 +2079,9 @@ async function loadUserProfile(forceRefresh = false) {
             daysLeft,
             accessStatus,
             userAnalytics,
-            testsData: { 
-                totalTests: userAnalytics.totalTests || 0, 
-                accuracy: userAnalytics.accuracy || 0 
+            testsData: {
+                totalTests: userAnalytics.totalTests || 0,
+                accuracy: userAnalytics.accuracy || 0
             }
         };
 
@@ -2226,9 +2238,9 @@ function updateProfileElementsDirectly({ name, email, statusText, statusClass, d
         const profileAvgScore = document.getElementById('profileAvgScore');
 
         if (profileDaysLeft) {
-            profileDaysLeft.textContent = daysLeft !== undefined ? daysLeft : 
-                                         accessStatus === 'premium' ? '30' : 
-                                         accessStatus === 'trial' ? '3' : '0';
+            profileDaysLeft.textContent = daysLeft !== undefined ? daysLeft :
+                accessStatus === 'premium' ? '30' :
+                    accessStatus === 'trial' ? '3' : '0';
         }
         if (profileTestsTaken) {
             profileTestsTaken.textContent = (testsData && testsData.totalTests !== undefined) ? testsData.totalTests : '0';
@@ -2389,61 +2401,61 @@ function updateWelcomeMessage() {
 }
 
 // Enhanced navigation functions
-        function showPage(pageId, navItem) {
-            // Hide all pages with fade out animation
-            document.querySelectorAll('.page').forEach(page => {
-                if (page.classList.contains('active')) {
-                    page.classList.add('animate__animated', 'animate__fadeOut');
-                    setTimeout(() => {
-                        page.classList.remove('active', 'animate__animated', 'animate__fadeOut');
-                    }, 300);
-                }
-            });
-
-            // Show selected page with fade in animation
-            setTimeout(async () => {
-                const page = document.getElementById(pageId);
-                page.classList.add('active', 'animate__animated', 'animate__fadeIn');
-
-                // Update nav items
-                if (navItem) {
-                    document.querySelectorAll('.nav-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    navItem.classList.add('active');
-                }
-
-                // Load page-specific data
-                if (pageId === 'analytics-page') {
-                    console.log('Loading analytics data for analytics page...');
-                    await loadUserAnalytics();
-                } else if (pageId === 'profile-page') {
-                    // Load profile data immediately when profile page is shown
-                    console.log('Profile page activated, loading data...');
-                    setTimeout(async () => {
-                        if (currentUser) {
-                            await loadUserProfile(true); // Force refresh profile data
-                        } else {
-                            console.log('No current user, initializing...');
-                            await initializeUser();
-                            if (currentUser) {
-                                await loadUserProfile(true);
-                            }
-                        }
-                    }, 100);
-                } else if (pageId === 'test-list-page') {
-                    // Check access and load all tests when navigating to test list page
-                    const hasAccess = await checkUserAccess();
-                    if (hasAccess) {
-                        document.getElementById('test-list-title').textContent = 'All Tests';
-                        await loadQuizzes(); // Load all quizzes without filter
-                    }
-                }
-
-                // Scroll to top
-                window.scrollTo(0, 0);
+function showPage(pageId, navItem) {
+    // Hide all pages with fade out animation
+    document.querySelectorAll('.page').forEach(page => {
+        if (page.classList.contains('active')) {
+            page.classList.add('animate__animated', 'animate__fadeOut');
+            setTimeout(() => {
+                page.classList.remove('active', 'animate__animated', 'animate__fadeOut');
             }, 300);
         }
+    });
+
+    // Show selected page with fade in animation
+    setTimeout(async () => {
+        const page = document.getElementById(pageId);
+        page.classList.add('active', 'animate__animated', 'animate__fadeIn');
+
+        // Update nav items
+        if (navItem) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            navItem.classList.add('active');
+        }
+
+        // Load page-specific data
+        if (pageId === 'analytics-page') {
+            console.log('Loading analytics data for analytics page...');
+            await loadUserAnalytics();
+        } else if (pageId === 'profile-page') {
+            // Load profile data immediately when profile page is shown
+            console.log('Profile page activated, loading data...');
+            setTimeout(async () => {
+                if (currentUser) {
+                    await loadUserProfile(true); // Force refresh profile data
+                } else {
+                    console.log('No current user, initializing...');
+                    await initializeUser();
+                    if (currentUser) {
+                        await loadUserProfile(true);
+                    }
+                }
+            }, 100);
+        } else if (pageId === 'test-list-page') {
+            // Check access and load all tests when navigating to test list page
+            const hasAccess = await checkUserAccess();
+            if (hasAccess) {
+                document.getElementById('test-list-title').textContent = 'All Tests';
+                await loadQuizzes(); // Load all quizzes without filter
+            }
+        }
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+    }, 300);
+}
 
 // Function to show test list filtered by stream
 async function showTestList(streamName) {
@@ -2482,9 +2494,9 @@ async function showUserProfile() {
     updateProfileElementsDirectly({
         name: currentUser?.name || 'User',
         email: currentUser?.email || 'Loading...',
-        statusText: accessStatus === 'premium' ? 'Premium Active' : 
-                   accessStatus === 'trial' ? 'Trial Active' : 
-                   accessStatus === 'expired' ? 'Access Expired' : 'Loading...',
+        statusText: accessStatus === 'premium' ? 'Premium Active' :
+            accessStatus === 'trial' ? 'Trial Active' :
+                accessStatus === 'expired' ? 'Access Expired' : 'Loading...',
         statusClass: accessStatus || 'loading',
         daysLeft: 0,
         testsData: { totalTests: userAnalytics?.totalTests || 0, accuracy: userAnalytics?.accuracy || 0 }
@@ -2622,51 +2634,51 @@ async function showAllTests() {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-            // Check if we're on the quiz page
-            const isQuizPage = window.location.pathname.includes('quiz.html');
+    // Check if we're on the quiz page
+    const isQuizPage = window.location.pathname.includes('quiz.html');
 
-            // Check access and load content
-            const hasAccess = await enforceGlobalAccess();
-            if (hasAccess) {
-                // Pre-populate profile elements with basic data immediately
-                if (!isQuizPage && currentUser) {
-                    // Set immediate fallback values to avoid "Loading..." states
-                    updateProfileElementsDirectly({
-                        name: currentUser.name || 'User',
-                        email: currentUser.email || 'Loading...',
-                        statusText: accessStatus === 'premium' ? 'Premium Active' : 
-                                   accessStatus === 'trial' ? 'Trial Active' : 
-                                   accessStatus === 'expired' ? 'Access Expired' : 'Checking...',
-                        statusClass: accessStatus || 'loading',
-                        daysLeft: accessStatus === 'premium' ? 30 : accessStatus === 'trial' ? 3 : 0,
-                        testsData: { 
-                            totalTests: userAnalytics?.totalTests || 0, 
-                            accuracy: userAnalytics?.accuracy || 0 
-                        },
-                        memberSince: userSession?.user?.created_at,
-                        totalStudyTime: userAnalytics?.totalTests ? userAnalytics.totalTests * 3 : 0
-                    });
+    // Check access and load content
+    const hasAccess = await enforceGlobalAccess();
+    if (hasAccess) {
+        // Pre-populate profile elements with basic data immediately
+        if (!isQuizPage && currentUser) {
+            // Set immediate fallback values to avoid "Loading..." states
+            updateProfileElementsDirectly({
+                name: currentUser.name || 'User',
+                email: currentUser.email || 'Loading...',
+                statusText: accessStatus === 'premium' ? 'Premium Active' :
+                    accessStatus === 'trial' ? 'Trial Active' :
+                        accessStatus === 'expired' ? 'Access Expired' : 'Checking...',
+                statusClass: accessStatus || 'loading',
+                daysLeft: accessStatus === 'premium' ? 30 : accessStatus === 'trial' ? 3 : 0,
+                testsData: {
+                    totalTests: userAnalytics?.totalTests || 0,
+                    accuracy: userAnalytics?.accuracy || 0
+                },
+                memberSince: userSession?.user?.created_at,
+                totalStudyTime: userAnalytics?.totalTests ? userAnalytics.totalTests * 3 : 0
+            });
 
-                    // Then load actual profile data in background
-                    console.log('Loading profile data on startup...');
-                    loadUserProfile().then(() => {
-                        updateWelcomeMessage();
-                    });
-                }
+            // Then load actual profile data in background
+            console.log('Loading profile data on startup...');
+            loadUserProfile().then(() => {
+                updateWelcomeMessage();
+            });
+        }
 
-                // Load homepage-specific content
-                if (!isQuizPage) {
-                    console.log('Loading analytics data for home page...');
-                    await loadUserAnalytics();
-                    console.log('Loading quizzes for homepage...');
-                    loadQuizzes();
-                    setupSearch();
-                }
+        // Load homepage-specific content
+        if (!isQuizPage) {
+            console.log('Loading analytics data for home page...');
+            await loadUserAnalytics();
+            console.log('Loading quizzes for homepage...');
+            loadQuizzes();
+            setupSearch();
+        }
 
-                // Set up profile image
-                const profileImg = document.querySelector('.profile-picture');
-                if (profileImg && !profileImg.src.includes('pic.png')) {
-                    profileImg.src = '/pic.png';
-                }
-            }
-        });
+        // Set up profile image
+        const profileImg = document.querySelector('.profile-picture');
+        if (profileImg && !profileImg.src.includes('pic.png')) {
+            profileImg.src = '/pic.png';
+        }
+    }
+});

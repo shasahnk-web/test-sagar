@@ -1,0 +1,698 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Review Answers - Test Sagar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated background elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-circle circle-1"></div>
+    <div class="bg-circle circle-2"></div>
+
+    <!-- Professional Header -->
+    <header class="result-header-bar">
+        <div class="logo-container">
+            <img src="logo.png" alt="Test Sagar" class="logo-image">
+            <div class="header-title">
+                <h1 class="app-title">Test Sagar</h1>
+                <span class="header-subtitle">Answer Review</span>
+            </div>
+        </div>
+        <div class="user-actions">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="material-icons">dark_mode</i>
+            </button>
+            <button class="btn btn-outline" onclick="window.location.href='result.html'">
+                <i class="material-icons">assessment</i>
+                Back to Results
+            </button>
+            <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                <i class="material-icons">home</i>
+                Dashboard
+            </button>
+        </div>
+    </header>
+
+    <!-- Review Container -->
+    <main class="review-container">
+        <!-- Review Header -->
+        <div class="review-header">
+            <div class="review-title">
+                <h1 id="reviewQuizName">Quiz Review</h1>
+                <p id="reviewSubtitle">Detailed analysis of your answers</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="review-stats">
+                <div class="stat-card correct">
+                    <div class="stat-icon">
+                        <i class="material-icons">check_circle</i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="correctCount">0</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                </div>
+                <div class="stat-card incorrect">
+                    <div class="stat-icon">
+                        <i class="material-icons">cancel</i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="incorrectCount">0</div>
+                        <div class="stat-label">Incorrect</div>
+                    </div>
+                </div>
+                <div class="stat-card skipped">
+                    <div class="stat-icon">
+                        <i class="material-icons">remove_circle</i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="skippedCount">0</div>
+                        <div class="stat-label">Skipped</div>
+                    </div>
+                </div>
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="material-icons">quiz</i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-number" id="totalQuestions">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="review-filters">
+            <div class="filter-group">
+                <label for="filterType">Filter by:</label>
+                <select id="filterType" onchange="reviewApp.filterQuestions()">
+                    <option value="all">All Questions</option>
+                    <option value="correct">Correct Answers</option>
+                    <option value="incorrect">Incorrect Answers</option>
+                    <option value="skipped">Skipped Questions</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filterSubject">Subject:</label>
+                <select id="filterSubject" onchange="reviewApp.filterQuestions()">
+                    <option value="all">All Subjects</option>
+                </select>
+            </div>
+
+            <div class="view-options">
+                <button class="btn btn-secondary" id="compactViewBtn" onclick="reviewApp.toggleView('compact')">
+                    <i class="material-icons">view_list</i>
+                    Compact View
+                </button>
+                <button class="btn btn-secondary active" id="detailedViewBtn" onclick="reviewApp.toggleView('detailed')">
+                    <i class="material-icons">view_module</i>
+                    Detailed View
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="review-progress">
+            <div class="progress-bar">
+                <div class="progress" id="reviewProgress" style="width: 0%"></div>
+            </div>
+            <span class="progress-text" id="progressText">Question 1 of 0</span>
+            <div class="navigation-controls">
+                <button class="btn btn-outline" onclick="reviewApp.previousQuestion()" id="prevBtn">
+                    <i class="material-icons">keyboard_arrow_left</i>
+                    Previous
+                </button>
+                <button class="btn btn-outline" onclick="reviewApp.nextQuestion()" id="nextBtn">
+                    Next
+                    <i class="material-icons">keyboard_arrow_right</i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Questions Container -->
+        <div class="questions-container" id="questionsContainer">
+            <!-- Questions will be dynamically loaded here -->
+        </div>
+
+        <!-- Jump to Question -->
+        <div class="jump-to-question">
+            <label for="jumpToInput">Jump to question:</label>
+            <input type="number" id="jumpToInput" min="1" placeholder="Enter question number">
+            <button class="btn btn-primary" onclick="reviewApp.jumpToQuestion()">Go</button>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="review-summary">
+            <h3><i class="material-icons">analytics</i> Performance Summary</h3>
+            <div class="summary-grid" id="summaryGrid">
+                <!-- Subject-wise performance will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="review-actions">
+            <button class="btn btn-secondary" onclick="reviewApp.printReview()">
+                <i class="material-icons">print</i>
+                Print Review
+            </button>
+            <button class="btn btn-primary" onclick="reviewApp.retakeQuiz()">
+                <i class="material-icons">refresh</i>
+                Retake Quiz
+            </button>
+            <button class="btn btn-success" onclick="reviewApp.shareReview()">
+                <i class="material-icons">share</i>
+                Share Results
+            </button>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+    <script>
+        // Review Application Object to avoid global variable conflicts
+        const reviewApp = {
+            reviewData: null,
+            currentQuestionIndex: 0,
+            filteredQuestions: [],
+            currentView: 'detailed',
+
+            init() {
+                this.setupThemeToggle();
+                this.loadReviewData();
+            },
+
+            setupThemeToggle() {
+                const themeToggle = document.getElementById('themeToggle');
+                const body = document.body;
+
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    body.classList.add('dark-mode');
+                    themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                }
+
+                themeToggle.addEventListener('click', () => {
+                    body.classList.toggle('dark-mode');
+                    if (body.classList.contains('dark-mode')) {
+                        themeToggle.innerHTML = '<i class="material-icons">light_mode</i>';
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        themeToggle.innerHTML = '<i class="material-icons">dark_mode</i>';
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            },
+
+            loadReviewData() {
+                const resultsData = localStorage.getItem('quiz_results');
+                if (!resultsData) {
+                    alert('No quiz results found. Redirecting to home.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                try {
+                    this.reviewData = JSON.parse(resultsData);
+                    console.log('Loaded review data:', this.reviewData);
+                    this.initializeReview();
+                } catch (error) {
+                    console.error('Error parsing quiz results:', error);
+                    alert('Invalid quiz results data. Redirecting to home.');
+                    window.location.href = 'index.html';
+                }
+            },
+
+            initializeReview() {
+                const { quiz, questions, userAnswers, results } = this.reviewData;
+
+                if (!quiz || !questions || !userAnswers || !results) {
+                    console.error('Missing required data in quiz results');
+                    alert('Incomplete quiz results data. Redirecting to home.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // Set title
+                document.getElementById('reviewQuizName').textContent = quiz.name;
+                document.getElementById('reviewSubtitle').textContent = `Completed on ${new Date(this.reviewData.completedAt).toLocaleDateString()}`;
+                document.title = `${quiz.name} - Review - Test Sagar`;
+
+                // Update stats
+                document.getElementById('correctCount').textContent = results.correct || 0;
+                document.getElementById('incorrectCount').textContent = results.incorrect || 0;
+                document.getElementById('skippedCount').textContent = results.skipped || 0;
+                document.getElementById('totalQuestions').textContent = results.total || questions.length;
+
+                // Populate subject filter
+                const subjects = [...new Set(questions.map(q => q.subject || 'General'))];
+                const subjectFilter = document.getElementById('filterSubject');
+                subjectFilter.innerHTML = '<option value="all">All Subjects</option>';
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    subjectFilter.appendChild(option);
+                });
+
+                // Initialize filtered questions with all questions
+                this.filteredQuestions = questions.map((question, index) => ({
+                    ...question,
+                    originalIndex: index,
+                    userAnswer: userAnswers[index],
+                    isCorrect: userAnswers[index] === question.correct,
+                    isSkipped: !userAnswers.hasOwnProperty(index),
+                    status: !userAnswers.hasOwnProperty(index) ? 'skipped' : 
+                            userAnswers[index] === question.correct ? 'correct' : 'incorrect'
+                }));
+
+                console.log('Filtered questions:', this.filteredQuestions);
+
+                this.displayQuestions();
+                this.updateProgress();
+                this.generateSummary();
+                this.setupKeyboardNavigation();
+            },
+
+            filterQuestions() {
+                const typeFilter = document.getElementById('filterType').value;
+                const subjectFilter = document.getElementById('filterSubject').value;
+
+                this.filteredQuestions = this.reviewData.questions.map((question, index) => ({
+                    ...question,
+                    originalIndex: index,
+                    userAnswer: this.reviewData.userAnswers[index],
+                    isCorrect: this.reviewData.userAnswers[index] === question.correct,
+                    isSkipped: !this.reviewData.userAnswers.hasOwnProperty(index),
+                    status: !this.reviewData.userAnswers.hasOwnProperty(index) ? 'skipped' : 
+                            this.reviewData.userAnswers[index] === question.correct ? 'correct' : 'incorrect'
+                })).filter(question => {
+                    const typeMatch = typeFilter === 'all' || question.status === typeFilter;
+                    const subjectMatch = subjectFilter === 'all' || question.subject === subjectFilter;
+                    return typeMatch && subjectMatch;
+                });
+
+                this.currentQuestionIndex = 0;
+                this.displayQuestions();
+                this.updateProgress();
+            },
+
+            displayQuestions() {
+                const container = document.getElementById('questionsContainer');
+
+                if (this.filteredQuestions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="material-icons">filter_list_off</i>
+                            <h3>No questions match your filters</h3>
+                            <p>Try adjusting your filter criteria to see more questions.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (this.currentView === 'detailed') {
+                    this.displayDetailedView();
+                } else {
+                    this.displayCompactView();
+                }
+            },
+
+            displayDetailedView() {
+                const container = document.getElementById('questionsContainer');
+
+                const statusIcon = {
+                    'correct': '✅',
+                    'incorrect': '❌',
+                    'skipped': '⚪'
+                };
+
+                // Generate HTML for all filtered questions
+                const questionsHTML = this.filteredQuestions.map((question, index) => {
+                    // Parse options safely
+                    let options = [];
+                    try {
+                        if (question.options) {
+                            options = typeof question.options === 'string' ? JSON.parse(question.options) : question.options;
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing options for question:', question);
+                        options = ['A', 'B', 'C', 'D'];
+                    }
+
+                    // Ensure we have valid options for MCQ
+                    if (question.type === 'mcq' && (!options || options.length === 0)) {
+                        options = ['A', 'B', 'C', 'D'];
+                    }
+
+                    return `
+                        <div class="question-card detailed-view" id="question-${question.originalIndex}">
+                            <div class="question-header">
+                                <div class="question-info">
+                                    <span class="question-number">Question ${question.originalIndex + 1}</span>
+                                    <span class="question-subject">${question.subject || 'General'}</span>
+                                </div>
+                                <div class="question-status ${question.status}">
+                                    <span class="status-icon">${statusIcon[question.status]}</span>
+                                    <span class="status-text">${question.status.charAt(0).toUpperCase() + question.status.slice(1)}</span>
+                                </div>
+                            </div>
+
+                            <div class="question-content">
+                                <div class="question-text">
+                                    <p>${question.question_text || `Question ${question.originalIndex + 1}`}</p>
+                                </div>
+
+                                ${question.image ? `<img src="${question.image}" alt="Question image" class="question-image" onerror="this.style.display='none'">` : ''}
+
+                                <div class="options-review">
+                                    ${question.type === 'mcq' ? options.map((option, optIndex) => {
+                                        const letter = String.fromCharCode(65 + optIndex);
+                                        const isUserAnswer = question.userAnswer === option;
+                                        const isCorrectAnswer = question.correct === option;
+
+                                        let optionClass = 'option-review';
+                                        if (isCorrectAnswer) optionClass += ' correct-answer';
+                                        if (isUserAnswer && !isCorrectAnswer) optionClass += ' user-wrong';
+                                        if (isUserAnswer && isCorrectAnswer) optionClass += ' user-correct';
+
+                                        return `
+                                            <div class="${optionClass}">
+                                                <span class="option-letter">${letter}</span>
+                                                <span class="option-text">${option}</span>
+                                                <div class="option-indicators">
+                                                    ${isCorrectAnswer ? '<span class="correct-indicator">✓ Correct</span>' : ''}
+                                                    ${isUserAnswer ? '<span class="user-indicator">Your Answer</span>' : ''}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('') : `
+                                        <div class="integer-review">
+                                            <div class="answer-comparison">
+                                                <div class="answer-item">
+                                                    <label>Your Answer:</label>
+                                                    <span class="user-answer ${question.isCorrect ? 'correct' : 'incorrect'}">${question.userAnswer || 'Not Answered'}</span>
+                                                </div>
+                                                <div class="answer-item">
+                                                    <label>Correct Answer:</label>
+                                                    <span class="correct-answer">${question.correct}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `}
+                                </div>
+
+                                ${question.explanation ? `
+                                    <div class="explanation">
+                                        <h4><i class="material-icons">lightbulb</i> Explanation</h4>
+                                        <p>${question.explanation}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = questionsHTML;
+            },
+
+            displayCompactView() {
+                const container = document.getElementById('questionsContainer');
+
+                container.innerHTML = `
+                    <div class="questions-grid compact-view">
+                        ${this.filteredQuestions.map((question, index) => {
+                            const statusIcon = {
+                                'correct': '✅',
+                                'incorrect': '❌',
+                                'skipped': '⚪'
+                            };
+
+                            return `
+                                <div class="question-card-compact ${question.status}" onclick="reviewApp.goToQuestion(${index})">
+                                    <div class="compact-header">
+                                        <span class="question-number">Q${question.originalIndex + 1}</span>
+                                        <span class="status-icon">${statusIcon[question.status]}</span>
+                                    </div>
+                                    <div class="compact-content">
+                                        <div class="subject-tag">${question.subject || 'General'}</div>
+                                        <div class="answer-info">
+                                            <span class="user-answer">Your: ${question.userAnswer || 'N/A'}</span>
+                                            <span class="correct-answer">Correct: ${question.correct}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            },
+
+            toggleView(view) {
+                this.currentView = view;
+
+                document.getElementById('compactViewBtn').classList.toggle('active', view === 'compact');
+                document.getElementById('detailedViewBtn').classList.toggle('active', view === 'detailed');
+
+                this.displayQuestions();
+            },
+
+            goToQuestion(index) {
+                if (index >= 0 && index < this.filteredQuestions.length) {
+                    this.currentQuestionIndex = index;
+                    if (this.currentView === 'detailed') {
+                        this.displayQuestions();
+                    }
+                    this.updateProgress();
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            },
+
+            nextQuestion() {
+                if (this.currentQuestionIndex < this.filteredQuestions.length - 1) {
+                    this.goToQuestion(this.currentQuestionIndex + 1);
+                }
+            },
+
+            previousQuestion() {
+                if (this.currentQuestionIndex > 0) {
+                    this.goToQuestion(this.currentQuestionIndex - 1);
+                }
+            },
+
+            jumpToQuestion() {
+                const input = document.getElementById('jumpToInput');
+                const questionNum = parseInt(input.value);
+
+                if (questionNum && questionNum >= 1 && questionNum <= this.reviewData.questions.length) {
+                    if (this.currentView === 'detailed') {
+                        // In detailed view, scroll to the specific question
+                        const questionElement = document.getElementById(`question-${questionNum - 1}`);
+                        if (questionElement) {
+                            questionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Highlight the question temporarily
+                            questionElement.style.outline = '3px solid var(--primary)';
+                            setTimeout(() => {
+                                questionElement.style.outline = 'none';
+                            }, 2000);
+                            input.value = '';
+                        } else {
+                            alert('Question not found in current filter. Try adjusting your filters.');
+                        }
+                    } else {
+                        // In compact view, find the question in filtered results
+                        const index = this.filteredQuestions.findIndex(q => q.originalIndex === questionNum - 1);
+                        if (index !== -1) {
+                            this.goToQuestion(index);
+                            input.value = '';
+                        } else {
+                            alert('Question not found in current filter. Try adjusting your filters.');
+                        }
+                    }
+                } else {
+                    alert('Please enter a valid question number.');
+                }
+            },
+
+            updateProgress() {
+                if (this.filteredQuestions.length === 0) return;
+
+                if (this.currentView === 'detailed') {
+                    // In detailed view (showing all questions), show overall progress
+                    document.getElementById('reviewProgress').style.width = '100%';
+                    document.getElementById('progressText').textContent = 
+                        `Showing all ${this.filteredQuestions.length} questions`;
+
+                    // Hide navigation buttons in detailed view since all questions are shown
+                    document.getElementById('prevBtn').style.display = 'none';
+                    document.getElementById('nextBtn').style.display = 'none';
+                } else {
+                    // In compact view, show current question progress
+                    const progress = ((this.currentQuestionIndex + 1) / this.filteredQuestions.length) * 100;
+                    document.getElementById('reviewProgress').style.width = `${progress}%`;
+                    document.getElementById('progressText').textContent = 
+                        `Question ${this.currentQuestionIndex + 1} of ${this.filteredQuestions.length}`;
+
+                    // Show navigation buttons in compact view
+                    document.getElementById('prevBtn').style.display = 'inline-flex';
+                    document.getElementById('nextBtn').style.display = 'inline-flex';
+                    document.getElementById('prevBtn').disabled = this.currentQuestionIndex === 0;
+                    document.getElementById('nextBtn').disabled = this.currentQuestionIndex === this.filteredQuestions.length - 1;
+                }
+            },
+
+            generateSummary() {
+                const container = document.getElementById('summaryGrid');
+                const { results } = this.reviewData;
+
+                if (!results.subjectStats) return;
+
+                container.innerHTML = Object.entries(results.subjectStats).map(([subject, stats]) => {
+                    const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+                    return `
+                        <div class="summary-card">
+                            <h4>${subject}</h4>
+                            <div class="summary-stats">
+                                <div class="stat">
+                                    <span class="stat-value">${stats.correct}</span>
+                                    <span class="stat-label">Correct</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">${stats.incorrect}</span>
+                                    <span class="stat-label">Wrong</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">${stats.skipped}</span>
+                                    <span class="stat-label">Skipped</span>
+                                </div>
+                            </div>
+                            <div class="summary-progress">
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: ${percentage}%"></div>
+                                </div>
+                                <span class="percentage">${percentage}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            setupKeyboardNavigation() {
+                document.addEventListener('keydown', (e) => {
+                    if (this.currentView === 'detailed') {
+                        switch(e.key) {
+                            case 'ArrowLeft':
+                                this.previousQuestion();
+                                break;
+                            case 'ArrowRight':
+                                this.nextQuestion();
+                                break;
+                            case 'Home':
+                                this.goToQuestion(0);
+                                break;
+                            case 'End':
+                                this.goToQuestion(this.filteredQuestions.length - 1);
+                                break;
+                        }
+                    }
+                });
+            },
+
+            printReview() {
+                const printWindow = window.open('', '_blank');
+                const printContent = this.generatePrintContent();
+
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            },
+
+            generatePrintContent() {
+                const { quiz, results } = this.reviewData;
+
+                return `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>${quiz.name} - Review</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; }
+                            .question { margin-bottom: 20px; page-break-inside: avoid; }
+                            .correct { color: green; }
+                            .incorrect { color: red; }
+                            .skipped { color: orange; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>${quiz.name} - Review</h1>
+                            <p>Score: ${results.percentage}% (${results.correct}/${results.total})</p>
+                        </div>
+                        ${this.filteredQuestions.map(q => `
+                            <div class="question">
+                                <h3>Question ${q.originalIndex + 1} - ${q.subject}</h3>
+                                <p><strong>Q:</strong> ${q.question_text || `Question ${q.originalIndex + 1}`}</p>
+                                <p><strong>Your Answer:</strong> <span class="${q.status}">${q.userAnswer || 'Not Answered'}</span></p>
+                                <p><strong>Correct Answer:</strong> <span class="correct">${q.correct}</span></p>
+                                <p><strong>Status:</strong> <span class="${q.status}">${q.status.toUpperCase()}</span></p>
+                            </div>
+                        `).join('')}
+                    </body>
+                    </html>
+                `;
+            },
+
+            shareReview() {
+                const { quiz, results } = this.reviewData;
+                const shareText = `I just completed "${quiz.name}" and scored ${results.percentage}%! 🎉\n\n` +
+                                 `📊 Results:\n` +
+                                 `✅ Correct: ${results.correct}\n` +
+                                 `❌ Incorrect: ${results.incorrect}\n` +
+                                 `⚪ Skipped: ${results.skipped}\n\n` +
+                                 `Test your knowledge at Test Sagar!`;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: `${quiz.name} - Test Results`,
+                        text: shareText,
+                        url: window.location.origin
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareText).then(() => {
+                        alert('Results copied to clipboard!');
+                    });
+                }
+            },
+
+            retakeQuiz() {
+                if (confirm('Are you sure you want to retake this quiz? Your current results will remain saved.')) {
+                    window.location.href = `quiz.html?test_id=${this.reviewData.quiz.id}`;
+                }
+            }
+        };
+
+        // Initialize the review app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            reviewApp.init();
+        });
+    </script>
+</body>
+</html>

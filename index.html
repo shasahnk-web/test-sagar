@@ -1,14 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Test Sagar - Powered by TRMS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Animated background elements -->
@@ -19,7 +27,7 @@
         <header>
             <div class="logo-container">
                 <img src="logo.png" alt="Test Sagar Logo" class="logo-image"></img>
-                <h1 class="app-title">Test Sagar <span>Powered by TRMS</span></h1>
+                <h1 class="app-title">Test Sagar <<span>Powered by TRMS</<span></h1>
             </div>
             <div class="user-actions">
                 <button class="theme-toggle" id="themeToggle">
@@ -37,25 +45,25 @@
                 <div class="nav-container">
                     <a href="#" class="nav-item active" onclick="showPage('home-page', this)">
                         <i class="material-icons">home</i>
-                        <span class="nav-text">Home</span>
+                        <span class="nav-text">Home</<span>
                     </a>
                     <a href="#" class="nav-item" onclick="showPage('test-list-page', this)">
                         <i class="material-icons">assignment</i>
-                        <span class="nav-text">Tests</span>
+                        <span class="nav-text">Tests</<span>
                     </a>
                     <a href="#" class="nav-item" onclick="showPage('analytics-page', this)">
                         <i class="material-icons">analytics</i>
-                        <span class="nav-text">Analytics</span>
+                        <span class="nav-text">Analytics</<span>
                     </a>
                     <a href="#" class="nav-item" onclick="showPage('profile-page', this)">
                         <i class="material-icons">person</i>
-                        <span class="nav-text">Profile</span>
+                        <span class="nav-text">Profile</<span>
                     </a>
                 </div>
 
                 <h2 class="section-title animate__animated animate__fadeIn">
                     <i class="material-icons">home</i>
-                    Welcome Back, <span class="neon-text" id="welcomeUserName">Student!</span>
+                    Welcome Back, <span class="neon-text" id="welcomeUserName">Student!</<span>
                 </h2>
 
                 <h2 class="section-title animate__animated animate__fadeIn animate__delay-1s">
@@ -63,23 +71,28 @@
                     Choose Your Class
                 </h2>
                 <div class="class-cards">
-                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;" onclick="showTestList('9th Grade')">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;"
+                        onclick="showTestList('9th Grade')">
                         <i class="material-icons">school</i>
                         <div class="class-text">9th Grade</div>
                     </div>
-                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;" onclick="showTestList('10th Grade')">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s;"
+                        onclick="showTestList('10th Grade')">
                         <i class="material-icons">school</i>
                         <div class="class-text">10th Grade</div>
                     </div>
-                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;" onclick="showTestList('11th JEE/NEET')">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;"
+                        onclick="showTestList('11th JEE/NEET')">
                         <i class="material-icons">science</i>
                         <div class="class-text">11th JEE/NEET</div>
                     </div>
-                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;" onclick="showTestList('12th JEE/NEET')">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;"
+                        onclick="showTestList('12th JEE/NEET')">
                         <i class="material-icons">science</i>
                         <div class="class-text">12th JEE/NEET</div>
                     </div>
-                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;" onclick="showTestList('Dropper JEE/NEET')">
+                    <div class="class-card animate__animated animate__fadeInUp" style="animation-delay: 0.5s;"
+                        onclick="showTestList('Dropper JEE/NEET')">
                         <i class="material-icons">update</i>
                         <div class="class-text">Dropper JEE/NEET</div>
                     </div>
@@ -90,28 +103,32 @@
                     Browse Tests
                 </h2>
                 <div class="test-types">
-                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;" onclick="showAllTests()">
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.6s;"
+                        onclick="showAllTests()">
                         <i class="material-icons">quiz</i>
                         <div class="test-type-info">
                             <h3>All Tests</h3>
                             <p>Browse all available tests across all streams</p>
                         </div>
                     </div>
-                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.7s;" onclick="showTestList('Practice Tests')">
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.7s;"
+                        onclick="showTestList('Practice Tests')">
                         <i class="material-icons">assignment</i>
                         <div class="test-type-info">
                             <h3>Practice Tests</h3>
                             <p>Full-length subject tests with detailed analysis</p>
                         </div>
                     </div>
-                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.8s;" onclick="showTestList('All India Tests')">
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.8s;"
+                        onclick="showTestList('All India Tests')">
                         <i class="material-icons">public</i>
                         <div class="test-type-info">
                             <h3>All India Tests</h3>
                             <p>Compete with students nationwide</p>
                         </div>
                     </div>
-                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.9s;" onclick="showTestList('PYQs')">
+                    <div class="test-type-card animate__animated animate__fadeIn" style="animation-delay: 0.9s;"
+                        onclick="showTestList('PYQs')">
                         <i class="material-icons">history_edu</i>
                         <div class="test-type-info">
                             <h3>Previous Year Questions</h3>
@@ -169,7 +186,7 @@
                     </button>
                     <h2 id="test-view-title" class="neon-text">Test</h2>
                     <div class="timer">
-                        <i class="material-icons">timer</i> <span id="time-remaining">30:00</span>
+                        <i class="material-icons">timer</i> <span id="time-remaining">30:00</<span>
                     </div>
                 </div>
 
@@ -183,7 +200,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 class="section-title">
                         <i class="material-icons">analytics</i>
-                        Your <span class="neon-text">Analytics</span>
+                        Your <span class="neon-text">Analytics</<span>
                     </h2>
                     <button class="btn btn-primary" onclick="refreshAnalyticsData()">
                         <i class="material-icons">refresh</i>
@@ -212,25 +229,25 @@
                         <h3><i class="material-icons">subject</i> Subject-wise Performance</h3>
                         <div class="subject-performance">
                             <div class="subject-stat">
-                                <span>Physics</span>
+                                <<span>Physics</<span>
                                 <div class="progress-bar">
                                     <div class="progress" style="width: 85%"></div>
                                 </div>
-                                <span>85%</span>
+                                <<span>85%</<span>
                             </div>
                             <div class="subject-stat">
-                                <span>Chemistry</span>
+                                <<span>Chemistry</<span>
                                 <div class="progress-bar">
                                     <div class="progress" style="width: 78%"></div>
                                 </div>
-                                <span>78%</span>
+                                <<span>78%</<span>
                             </div>
                             <div class="subject-stat">
-                                <span>Mathematics</span>
+                                <<span>Mathematics</<span>
                                 <div class="progress-bar">
                                     <div class="progress" style="width: 92%"></div>
                                 </div>
-                                <span>92%</span>
+                                <<span>92%</<span>
                             </div>
                         </div>
                     </div>
@@ -240,7 +257,7 @@
                             <p>No recent tests found. Take a test to see your progress!</p>
                         </div>
                     </div>
-                    <div class="performance-card">
+                    <div style="display:none;" class="performance-card">
                         <h3><i class="material-icons">show_chart</i> Improvement Trend</h3>
                         <div class="improvement-trend" id="improvementTrend">
                             <p>Take more tests to see your improvement trend!</p>
@@ -253,91 +270,94 @@
             <div class="page" id="profile-page">
                 <h2 class="section-title">
                     <i class="material-icons">person</i>
-                    Your <span class="neon-text">Profile</span>
+                    Your <span class="neon-text">Profile</<span>
                 </h2>
                 <div class="profile-container">
                     <div class="performance-card profile-card">
                         <div class="profile-header">
-                        <div class="profile-avatar">
-                            <img src="pic.png" alt="Profile Picture" class="profile-picture">
-                        </div>
-                        <div class="profile-info">
-                            <h3 id="profileName">Loading...</h3>
-                            <p class="email" id="profileEmail">Loading...</p>
-                            <div class="subscription-status" id="subscriptionStatus">
-                                <span class="status-badge" id="statusBadge">Loading...</span>
+                            <div class="profile-avatar">
+                                <img src="pic.png" alt="Profile Picture" class="profile-picture">
+                            </div>
+                            <div class="profile-info">
+                                <h3 id="profileName">Loading...</h3>
+                                <p class="email" id="profileEmail">Loading...</p>
+                                <div class="subscription-status" id="subscriptionStatus">
+                                    <span class="status-badge" id="statusBadge">Loading...</<span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div style="display:none;" class="profile-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="profileDaysLeft">Loading...</div>
-                            <div class="stat-label">Days Left</div>
+                        <div style="display:none;" class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="profileDaysLeft">Loading...</div>
+                                <div class="stat-label">Days Left</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="profileTestsTaken">Loading...</div>
+                                <div class="stat-label">Tests Taken</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="profileAvgScore">Loading...</div>
+                                <div class="stat-label">Avg Score</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="profileTestsTaken">Loading...</div>
-                            <div class="stat-label">Tests Taken</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="profileAvgScore">Loading...</div>
-                            <div class="stat-label">Avg Score</div>
-                        </div>
-                    </div>
 
-                    <div class="profile-sections">
-                        <div class="profile-section">
-                            <h4><i class="material-icons">edit</i>Edit Profile</h4>
-                            <button class="btn btn-primary" id="editProfileBtn" onclick="toggleEditProfile()">
-                                <i class="material-icons">edit</i> Edit Profile
+                        <div class="profile-sections">
+                            <div class="profile-section">
+                                <h4><i class="material-icons">edit</i>Edit Profile</h4>
+                                <button class="btn btn-primary" id="editProfileBtn" onclick="toggleEditProfile()">
+                                    <i class="material-icons">edit</i> Edit Profile
+                                </button>
+                                <div id="editProfileForm" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="editName">Name</label>
+                                        <input type="text" id="editName" class="form-input"
+                                            placeholder="Enter your name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editEmail">Email</label>
+                                        <input type="email" id="editEmail" class="form-input"
+                                            placeholder="Enter your email">
+                                    </div>
+                                    <div class="form-actions">
+                                        <button class="btn btn-primary" onclick="saveProfile()">
+                                            <i class="material-icons">save</i> Save Changes
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="cancelEdit()">
+                                            <i class="material-icons">cancel</i> Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="profile-section">
+                                <h4><i class="material-icons">info</i>Account Information</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Member Since</<span>
+                                        <span class="info-value" id="memberSince">Loading...</<span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Last Login</<span>
+                                        <span class="info-value" id="lastLogin">Loading...</<span>
+                                    </div>
+                                    <div style="display: none;" class="info-item">
+                                        <span class="info-label">Total Time Studied</<span>
+                                        <span class="info-value" id="totalStudyTime">Loading...</<span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions" id="profileActions">
+                            <button class="btn btn-primary" id="upgradeBtn" onclick="showPremiumModal()"
+                                style="display: none;">
+                                <i class="material-icons">star</i> Upgrade to Premium
                             </button>
-                            <div id="editProfileForm" style="display: none;">
-                                <div class="form-group">
-                                    <label for="editName">Name</label>
-                                    <input type="text" id="editName" class="form-input" placeholder="Enter your name">
-                                </div>
-                                <div class="form-group">
-                                    <label for="editEmail">Email</label>
-                                    <input type="email" id="editEmail" class="form-input" placeholder="Enter your email">
-                                </div>
-                                <div class="form-actions">
-                                    <button class="btn btn-primary" onclick="saveProfile()">
-                                        <i class="material-icons">save</i> Save Changes
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="cancelEdit()">
-                                        <i class="material-icons">cancel</i> Cancel
-                                    </button>
-                                </div>
-                            </div>
+                            <button class="btn btn-danger" onclick="logout()">
+                                <i class="material-icons">logout</i> Logout
+                            </button>
                         </div>
-
-                        <div class="profile-section">
-                            <h4><i class="material-icons">info</i>Account Information</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">Member Since</span>
-                                    <span class="info-value" id="memberSince">Loading...</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Last Login</span>
-                                    <span class="info-value" id="lastLogin">Loading...</span>
-                                </div>
-                                <div style"display:none;" class="info-item">
-                                    <span class="info-label">Total Time Studied</span>
-                                    <span class="info-value" id="totalStudyTime">Loading...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-actions" id="profileActions">
-                        <button class="btn btn-primary" id="upgradeBtn" onclick="showPremiumModal()" style="display: none;">
-                            <i class="material-icons">star</i> Upgrade to Premium
-                        </button>
-                        <button class="btn btn-danger" onclick="logout()">
-                            <i class="material-icons">logout</i> Logout
-                        </button>
-                    </div>
                     </div>
                 </div>
             </div>
@@ -372,7 +392,7 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             // Initialize app
             await initializeApp();
 
@@ -428,7 +448,7 @@
 
         function setupRippleEffects() {
             document.querySelectorAll('.btn, .class-card, .test-type-card, .quiz-card').forEach(btn => {
-                btn.addEventListener('click', function(e) {
+                btn.addEventListener('click', function (e) {
                     const x = e.clientX - e.target.getBoundingClientRect().left;
                     const y = e.clientY - e.target.getBoundingClientRect().top;
 
@@ -520,7 +540,7 @@
             timerDisplay.style.color = 'var(--danger)';
             timerDisplay.style.textShadow = 'none';
 
-            window.timerInterval = setInterval(function() {
+            window.timerInterval = setInterval(function () {
                 const minutes = Math.floor(timer / 60);
                 const seconds = timer % 60;
 
@@ -552,4 +572,5 @@
         }
     </script>
 </body>
+
 </html>
