@@ -1138,6 +1138,18 @@ main {
   font-weight: 500;
 }
 
+.form-input[readonly] {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-input[readonly]:focus {
+  box-shadow: none;
+  border-color: var(--border-color);
+}
+
 .form-group input {
   width: 100%;
   padding: 0.75rem;

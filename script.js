@@ -427,6 +427,72 @@ async function updateUserProfile(newName, newEmail) {
     }
 }
 
+async function updateUserProfileNameOnly(newName) {
+    if (!currentUser) {
+        alert('Please log in first');
+        return false;
+    }
+
+    try {
+        // Update user metadata in Supabase Auth (only name)
+        const { data, error: authError } = await supabase.auth.updateUser({
+            data: { full_name: newName }
+        });
+
+        if (authError) throw authError;
+
+        // Update user profile in our database (only name)
+        const { error: profileError } = await supabase
+            .from('user_profiles')
+            .update({
+                name: newName,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', currentUser.id);
+
+        if (profileError) throw profileError;
+
+        // Also update premium_users table if user is premium (only name)
+        if (accessStatus === 'premium') {
+            const { error: premiumUpdateError } = await supabase
+                .from('premium_users')
+                .update({
+                    name: newName
+                })
+                .eq('user_id', currentUser.id);
+
+            if (premiumUpdateError) {
+                console.warn('Error updating premium user profile:', premiumUpdateError);
+            }
+        }
+
+        // Also update user_trials table if user is on trial (only name)
+        if (accessStatus === 'trial') {
+            const { error: trialUpdateError } = await supabase
+                .from('user_trials')
+                .update({
+                    name: newName
+                })
+                .eq('user_id', currentUser.id);
+
+            if (trialUpdateError) {
+                console.warn('Error updating trial user profile:', trialUpdateError);
+            }
+        }
+
+        // Update current user object (only name)
+        currentUser.name = newName;
+
+        // Clear cache to force fresh data load
+        invalidateProfileCache();
+
+        return true;
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        return false;
+    }
+}
+
 async function showLoginModal() {
     return new Promise((resolve) => {
         const modal = document.getElementById('loginModal');
@@ -2295,15 +2361,9 @@ function cancelEdit() {
 
 async function saveProfile() {
     const newName = document.getElementById('editName').value.trim();
-    const newEmail = document.getElementById('editEmail').value.trim();
 
-    if (!newName || !newEmail) {
-        alert('Please fill in all fields');
-        return;
-    }
-
-    if (!isValidEmail(newEmail)) {
-        alert('Please enter a valid email address');
+    if (!newName) {
+        alert('Please enter your name');
         return;
     }
 
@@ -2314,12 +2374,11 @@ async function saveProfile() {
     saveBtn.disabled = true;
 
     try {
-        const success = await updateUserProfile(newName, newEmail);
+        const success = await updateUserProfileNameOnly(newName);
 
         if (success) {
             // Update UI immediately
             document.getElementById('profileName').textContent = newName;
-            document.getElementById('profileEmail').textContent = newEmail;
             updateWelcomeMessage();
 
             // Hide edit form
@@ -2586,6 +2645,7 @@ window.loadUserAnalytics = loadUserAnalytics;
 window.updateAnalyticsDisplay = updateAnalyticsDisplay;
 window.retryPaymentActivation = retryPaymentActivation;
 window.updateUserProfile = updateUserProfile;
+window.updateUserProfileNameOnly = updateUserProfileNameOnly;
 window.showLoginForm = showLoginForm;
 window.showRegisterForm = showRegisterForm;
 window.logout = logout;
