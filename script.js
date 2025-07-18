@@ -160,13 +160,20 @@ async function checkGlobalAccess() {
         }
     }
 
-    // No access - show premium modal
+    // No access - show premium modal (unless we're on premium page)
     accessStatus = 'expired';
-    showPremiumModal();
+    if (!window.location.pathname.includes('premium.html')) {
+        showPremiumModal();
+    }
     return false;
 }
 
 function showPremiumModal() {
+    // Check if we're on the premium page - if so, don't show modal
+    if (window.location.pathname.includes('premium.html')) {
+        return;
+    }
+
     const existingModal = document.getElementById('premiumModal');
     if (existingModal) {
         existingModal.remove();
@@ -186,15 +193,15 @@ function showPremiumModal() {
                 <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Premium Benefits:</h3>
                 <ul style="list-style: none; padding: 0;">
                     <li style="padding: 0.5rem 0; color: var(--secondary);">✅ Unlimited access to all quizzes</li>
-                    <li style="padding: 0.5rem 0; color: var(--secondary);">✅ 1 month of full access</li>
+                    <li style="padding: 0.5rem 0; color: var(--secondary);">✅ Multiple subscription options</li>
                     <li style="padding: 0.5rem 0; color: var(--secondary);">✅ Detailed analytics and progress tracking</li>
                     <li style="padding: 0.5rem 0; color: var(--secondary);">✅ Priority support</li>
                 </ul>
             </div>
             <div class="premium-pricing">
-                <div class="price" style="font-size: 2rem; font-weight: bold; color: var(--primary); margin-bottom: 1rem;">₹99 for 1 month</div>
-                <button class="btn btn-premium" onclick="initiatePremiumPayment()" style="background: var(--secondary); color: white; border: none; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 1rem;">Buy Premium Now</button>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Secure payment powered by Razorpay</p>
+                <div class="price" style="font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 1rem;">Starting from ₹58/month</div>
+                <button class="btn btn-premium" onclick="window.location.href='premium.html'" style="background: var(--secondary); color: white; border: none; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 1rem;">View Premium Plans</button>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Multiple plans available - Choose what works for you!</p>
             </div>
         </div>
     `;
@@ -1811,7 +1818,7 @@ window.addEventListener('beforeunload', cleanup);
 window.addEventListener('unload', cleanup);
 
 async function enforceGlobalAccess() {
-    if (window.location.pathname.includes('uploader.html')) {
+    if (window.location.pathname.includes('uploader.html') || window.location.pathname.includes('premium.html')) {
         return true;
     }
 

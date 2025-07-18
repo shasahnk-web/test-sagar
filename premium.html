@@ -1,0 +1,772 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Premium Plans - Test Sagar</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .premium-hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .premium-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .premium-hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .plans-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .plan-card {
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+
+        .plan-card.popular {
+            border-color: var(--secondary);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            transform: scale(1.05);
+        }
+
+        .plan-card.popular::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-duration {
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price .currency {
+            font-size: 1.5rem;
+            vertical-align: top;
+        }
+
+        .plan-period {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .plan-discount {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            display: inline-block;
+        }
+
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .plan-features i {
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+
+        .select-plan-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .plan-card:not(.popular) .select-plan-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .plan-card.popular .select-plan-btn {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            color: white;
+        }
+
+        .select-plan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .features-section {
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            margin: 3rem 0;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .features-section h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .faq-section {
+            margin: 3rem 0;
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .faq-item {
+            background: var(--glass-bg);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .guarantee-section {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            margin: 3rem 0;
+        }
+
+        .guarantee-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .premium-hero h1 {
+                font-size: 2rem;
+            }
+
+            .premium-hero {
+                padding: 2rem 1rem;
+            }
+
+            .plans-container {
+                padding: 0 1rem;
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .plan-card.popular {
+                transform: none;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Animated background elements -->
+        <div class="bg-grid"></div>
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+
+        <header>
+            <div class="logo-container">
+                <img src="logo.png" alt="Test Sagar Logo" class="logo-image">
+                <h1 class="app-title">Test Sagar <span>Powered by TRMS</span></h1>
+            </div>
+            <div class="user-actions">
+                <button class="btn btn-outline" onclick="goHome()">
+                    <i class="material-icons">home</i> Home
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div class="premium-hero">
+                <h1>Unlock Premium Access</h1>
+                <p>Choose the perfect plan for your learning journey. All plans include unlimited access to tests, detailed analytics, and priority support.</p>
+            </div>
+
+            <div class="plans-container">
+                <div class="plans-grid">
+                    <!-- 1 Month Plan -->
+                    <div class="plan-card">
+                        <div class="plan-duration">1 Month</div>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>99
+                        </div>
+                        <div class="plan-period">per month</div>
+                        <ul class="plan-features">
+                            <li><i class="material-icons">check_circle</i> Unlimited Test Access</li>
+                            <li><i class="material-icons">check_circle</i> Detailed Analytics</li>
+                            <li><i class="material-icons">check_circle</i> Priority Support</li>
+                            <li><i class="material-icons">check_circle</i> All Subjects</li>
+                        </ul>
+                        <button class="select-plan-btn" onclick="selectPlan(1, 99)">
+                            Select Plan
+                        </button>
+                    </div>
+
+                    <!-- 3 Month Plan -->
+                    <div class="plan-card">
+                        <div class="plan-duration">3 Months</div>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>249
+                        </div>
+                        <div class="plan-period">₹83 per month</div>
+                        <div class="plan-discount">Save 16%</div>
+                        <ul class="plan-features">
+                            <li><i class="material-icons">check_circle</i> Everything in 1 Month</li>
+                            <li><i class="material-icons">check_circle</i> Extended Progress Tracking</li>
+                            <li><i class="material-icons">check_circle</i> Performance Reports</li>
+                            <li><i class="material-icons">check_circle</i> Study Recommendations</li>
+                        </ul>
+                        <button class="select-plan-btn" onclick="selectPlan(3, 249)">
+                            Select Plan
+                        </button>
+                    </div>
+
+                    <!-- 6 Month Plan - Popular -->
+                    <div class="plan-card popular">
+                        <div class="plan-duration">6 Months</div>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>449
+                        </div>
+                        <div class="plan-period">₹75 per month</div>
+                        <div class="plan-discount">Save 24%</div>
+                        <ul class="plan-features">
+                            <li><i class="material-icons">check_circle</i> Everything in 3 Months</li>
+                            <li><i class="material-icons">check_circle</i> Advanced Analytics</li>
+                            <li><i class="material-icons">check_circle</i> Personalized Study Plans</li>
+                            <li><i class="material-icons">check_circle</i> Mock Test Series</li>
+                            <li><i class="material-icons">check_circle</i> Expert Tips & Strategies</li>
+                        </ul>
+                        <button class="select-plan-btn" onclick="selectPlan(6, 449)">
+                            Select Plan
+                        </button>
+                    </div>
+
+                    <!-- 12 Month Plan -->
+                    <div class="plan-card">
+                        <div class="plan-duration">1 Year</div>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>799
+                        </div>
+                        <div class="plan-period">₹67 per month</div>
+                        <div class="plan-discount">Save 32%</div>
+                        <ul class="plan-features">
+                            <li><i class="material-icons">check_circle</i> Everything in 6 Months</li>
+                            <li><i class="material-icons">check_circle</i> Complete Test Archive</li>
+                            <li><i class="material-icons">check_circle</i> Detailed Performance Analytics</li>
+                            <li><i class="material-icons">check_circle</i> Career Guidance Sessions</li>
+                            <li><i class="material-icons">check_circle</i> Exam Strategy Workshops</li>
+                        </ul>
+                        <button class="select-plan-btn" onclick="selectPlan(12, 799)">
+                            Select Plan
+                        </button>
+                    </div>
+
+                    <!-- 24 Month Plan -->
+                    <div class="plan-card">
+                        <div class="plan-duration">2 Years</div>
+                        <div class="plan-price">
+                            <span class="currency">₹</span>1399
+                        </div>
+                        <div class="plan-period">₹58 per month</div>
+                        <div class="plan-discount">Save 41%</div>
+                        <ul class="plan-features">
+                            <li><i class="material-icons">check_circle</i> Everything in 1 Year</li>
+                            <li><i class="material-icons">check_circle</i> Lifetime Updates</li>
+                            <li><i class="material-icons">check_circle</i> VIP Support Channel</li>
+                            <li><i class="material-icons">check_circle</i> Exclusive Content Access</li>
+                            <li><i class="material-icons">check_circle</i> One-on-One Mentoring</li>
+                            <li><i class="material-icons">check_circle</i> Certificate of Completion</li>
+                        </ul>
+                        <button class="select-plan-btn" onclick="selectPlan(24, 1399)">
+                            Select Plan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div class="features-section">
+                    <h2>Why Choose Test Sagar Premium?</h2>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="material-icons">quiz</i>
+                            </div>
+                            <div>
+                                <h4>Unlimited Tests</h4>
+                                <p>Access to all test series across all subjects and difficulty levels</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="material-icons">analytics</i>
+                            </div>
+                            <div>
+                                <h4>Advanced Analytics</h4>
+                                <p>Detailed performance tracking and improvement recommendations</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="material-icons">support_agent</i>
+                            </div>
+                            <div>
+                                <h4>Priority Support</h4>
+                                <p>Get help faster with our dedicated premium support team</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="material-icons">school</i>
+                            </div>
+                            <div>
+                                <h4>All Subjects</h4>
+                                <p>Physics, Chemistry, Mathematics, and more subjects available</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Section -->
+                <div class="faq-section">
+                    <h2>Frequently Asked Questions</h2>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            Can I change my plan later?
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes, you can upgrade or downgrade your plan at any time. The changes will take effect from your next billing cycle.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            Is there a refund policy?
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </div>
+                        <div class="faq-answer">
+                            We offer a 7-day money-back guarantee. If you're not satisfied with our premium features, contact support for a full refund.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            What payment methods do you accept?
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </div>
+                        <div class="faq-answer">
+                            We accept all major credit cards, debit cards, UPI, net banking, and mobile wallets through Razorpay.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFAQ(this)">
+                            Can I use premium on multiple devices?
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes, your premium subscription works across all your devices. Just log in with the same account.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guarantee Section -->
+                <div class="guarantee-section">
+                    <h3>🛡️ 7-Day Money Back Guarantee</h3>
+                    <p>Try Test Sagar Premium risk-free. If you're not completely satisfied within 7 days, we'll refund your full payment.</p>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-method">
+                            <i class="material-icons">credit_card</i>
+                            Credit Card
+                        </div>
+                        <div class="payment-method">
+                            <i class="material-icons">account_balance</i>
+                            Net Banking
+                        </div>
+                        <div class="payment-method">
+                            <i class="material-icons">phone_android</i>
+                            UPI
+                        </div>
+                        <div class="payment-method">
+                            <i class="material-icons">wallet</i>
+                            Mobile Wallet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="script.js"></script>
+    <script>
+        function selectPlan(months, amount) {
+            if (!currentUser) {
+                alert('Please log in to purchase a premium plan.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Initiate payment for selected plan
+            initiatePremiumPayment(months, amount);
+        }
+
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked item if it wasn't already active
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize user on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeUser();
+            
+            // If user is already premium, show message
+            if (accessStatus === 'premium') {
+                const hero = document.querySelector('.premium-hero');
+                hero.innerHTML = `
+                    <h1>You're Already Premium! 🎉</h1>
+                    <p>You have full access to all Test Sagar features. Continue your learning journey!</p>
+                    <button class="btn btn-primary" onclick="goHome()" style="margin-top: 2rem; padding: 1rem 2rem; font-size: 1.1rem;">
+                        <i class="material-icons">home</i> Go to Dashboard
+                    </button>
+                `;
+                
+                // Hide all plan cards
+                document.querySelector('.plans-grid').style.display = 'none';
+            }
+        });
+
+        // Modified payment function for premium page
+        async function initiatePremiumPayment(months, amount) {
+            if (!currentUser) {
+                alert('Please refresh the page and try again.');
+                return;
+            }
+
+            // Show loading state on the clicked button
+            const clickedButton = event.target;
+            const originalText = clickedButton.textContent;
+            clickedButton.textContent = 'Processing...';
+            clickedButton.disabled = true;
+
+            try {
+                const options = {
+                    key: 'rzp_test_o1mGGxGdk4rBCk',
+                    amount: amount * 100, // Convert to paise
+                    currency: 'INR',
+                    name: 'Test Sagar Premium',
+                    description: `${months} Month${months > 1 ? 's' : ''} Premium Access`,
+                    image: '/logo.png',
+                    prefill: {
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        contact: ''
+                    },
+                    theme: {
+                        color: '#6366F1'
+                    },
+                    handler: async function(response) {
+                        await handlePremiumPaymentSuccess(response, months);
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            console.log('Payment cancelled');
+                            clickedButton.textContent = originalText;
+                            clickedButton.disabled = false;
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+            } catch (error) {
+                console.error('Error initiating payment:', error);
+                alert('Error starting payment. Please try again.');
+                clickedButton.textContent = originalText;
+                clickedButton.disabled = false;
+            }
+        }
+
+        async function handlePremiumPaymentSuccess(paymentResponse, months) {
+            try {
+                console.log('Payment successful:', paymentResponse);
+
+                // Show success message
+                const hero = document.querySelector('.premium-hero');
+                hero.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h1 style="color: white;">🎉 Payment Successful!</h1>
+                        <p style="color: rgba(255,255,255,0.9);">Processing your premium access...</p>
+                        <div style="margin: 1rem 0;">
+                            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Ensure user session is valid
+                if (!userSession || !currentUser) {
+                    throw new Error('User session is invalid. Please refresh and try again.');
+                }
+
+                const expiryDate = new Date();
+                expiryDate.setMonth(expiryDate.getMonth() + months);
+
+                // First, delete any existing trial record to prevent conflicts
+                const { error: deleteError } = await supabase
+                    .from('user_trials')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (deleteError) {
+                    console.log('Note: No trial record to delete or delete failed:', deleteError.message);
+                } else {
+                    console.log('Trial record deleted successfully');
+                }
+
+                // Then add to premium users with proper user context
+                const { data: premiumData, error: premiumError } = await supabase
+                    .from('premium_users')
+                    .upsert({
+                        user_id: currentUser.id,
+                        email: currentUser.email,
+                        name: currentUser.name,
+                        payment_id: paymentResponse.razorpay_payment_id,
+                        expiry_date: expiryDate.toISOString(),
+                        start_date: new Date().toISOString(),
+                        plan_months: months
+                    }, {
+                        onConflict: 'user_id'
+                    })
+                    .select();
+
+                if (premiumError) {
+                    console.error('Premium insertion error:', premiumError);
+                    throw new Error(`Failed to activate premium: ${premiumError.message}`);
+                }
+
+                // Update access status immediately
+                accessStatus = 'premium';
+
+                // Clear all caches to force fresh data load
+                clearAllCache();
+                profileDataCache = null;
+                profileCacheTimestamp = null;
+
+                // Update the hero to show success
+                hero.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h1 style="color: white;">🎉 Premium Activated!</h1>
+                        <p style="color: rgba(255,255,255,0.9);">Your ${months} month${months > 1 ? 's' : ''} premium access has been successfully activated!</p>
+                        <p style="color: rgba(255,255,255,0.7); margin: 1rem 0;">Payment ID: ${paymentResponse.razorpay_payment_id}</p>
+                        <button onclick="window.location.href='index.html'" style="background: white; color: var(--primary); border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-top: 1.5rem; font-weight: 600;">Continue to Dashboard</button>
+                    </div>
+                `;
+
+                // Hide plan cards
+                document.querySelector('.plans-grid').style.display = 'none';
+
+                // Force immediate reload after a delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error updating premium status:', error);
+                const hero = document.querySelector('.premium-hero');
+                hero.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h1 style="color: white;">⚠️ Processing Error</h1>
+                        <p style="color: rgba(255,255,255,0.9);">Payment was successful but there was an error activating your premium access.</p>
+                        <p style="color: rgba(255,255,255,0.7); margin: 1rem 0;">Payment ID: ${paymentResponse.razorpay_payment_id}</p>
+                        <p style="color: rgba(255,255,255,0.7);">Error: ${error.message}</p>
+                        <div style="margin-top: 1.5rem;">
+                            <button onclick="window.location.reload()" style="background: white; color: var(--primary); border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-right: 1rem; font-weight: 600;">Try Again</button>
+                            <button onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">Continue</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+
+</html>
